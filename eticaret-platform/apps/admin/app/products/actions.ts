@@ -1,0 +1,239 @@
+"use server";
+
+import { prisma } from "@eticaret/database";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { writeFile } from "fs/promises";
+import path from "path";
+
+async function processImages(formData: FormData, existingImages: string[], productName: string) {
+  const imageUrls = formData.getAll("imageUrls") as string[];
+  const imageFiles = formData.getAll("imageFiles") as File[];
+  
+  const processedImages: string[] = [...existingImages, ...imageUrls.filter(url => url.trim() !== '')];
+
+  for (const file of imageFiles) {
+    if (file.size > 0) {
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      const filepath = path.join(process.cwd(), 'public', 'uploads', filename);
+      
+      await writeFile(filepath, buffer);
+      processedImages.push(`/uploads/${filename}`);
+    }
+  }
+
+  // Remove duplicate images to be safe
+  const uniqueImages = Array.from(new Set(processedImages));
+
+  if (uniqueImages.length === 0) {
+     uniqueImages.push("https://placehold.co/800x800/F9F9F9/111827?text=" + encodeURIComponent(productName));
+  }
+
+  return uniqueImages;
+}
+
+export async function createProduct(formData: FormData) {
+  const name = formData.get("name") as string;
+  const description = formData.get("description") as string;
+  
+  let brandId = formData.get("brandId") as string;
+  const newBrandName = formData.get("newBrandName") as string;
+  
+  let categoryId = formData.get("categoryId") as string;
+  const newCategoryName = formData.get("newCategoryName") as string;
+  
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now().toString().slice(-4);
+  
+  const isB2C = formData.get("isB2C") === "on";
+  const isB2B = formData.get("isB2B") === "on";
+
+  const sku = formData.get("sku") as string;
+  const barcode = formData.get("barcode") as string;
+  
+  const retailPrice = Math.max(0, Number(formData.get("retailPrice")) || 0);
+  const listA = Math.max(0, Number(formData.get("listA")) || 0);
+  const listB = Math.max(0, Number(formData.get("listB")) || 0);
+  const listC = Math.max(0, Number(formData.get("listC")) || listB);
+  const listD = Math.max(0, Number(formData.get("listD")) || listB);
+  const taxRate = Math.max(0, Number(formData.get("taxRate")) || 20);
+  
+  const totalStock = Math.max(0, Number(formData.get("totalStock")) || 0);
+  const b2cReserveRatio = Math.max(0, Math.min(100, Number(formData.get("b2cReserveRatio")) || 0));
+
+  try {
+    if (newBrandName) {
+      const newBrand = await prisma.brand.create({
+        data: {
+          name: newBrandName,
+          slug: newBrandName.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now().toString().slice(-4),
+        }
+      });
+      brandId = newBrand.id;
+    }
+
+    if (newCategoryName) {
+      const newCategory = await prisma.category.create({
+        data: {
+          name: newCategoryName,
+          slug: newCategoryName.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now().toString().slice(-4),
+        }
+      });
+      categoryId = newCategory.id;
+    }
+
+    const processedImages = await processImages(formData, [], name);
+
+    const product = await prisma.product.create({
+      data: {
+        name,
+        slug,
+        description,
+        brandId,
+        categoryId,
+        isB2C,
+        isB2B,
+      }
+    });
+
+    const variant = await prisma.variant.create({
+      data: {
+        productId: product.id,
+        sku,
+        barcode,
+        images: processedImages,
+      }
+    });
+
+    await prisma.price.create({
+      data: {
+        variantId: variant.id,
+        retailPrice,
+        listA,
+        listB,
+        listC,
+        listD,
+        taxRate,
+      }
+    });
+
+    await prisma.inventory.create({
+      data: {
+        variantId: variant.id,
+        totalStock,
+        b2cReserveRatio,
+      }
+    });
+
+  } catch (error) {
+    console.error("Error creating product:", error);
+    throw new Error("Ürün oluşturulurken bir hata oluştu.");
+  }
+
+  revalidatePath("/products");
+  redirect("/products?success=created");
+}
+
+export async function updateProduct(productId: string, variantId: string, formData: FormData) {
+  const name = formData.get("name") as string;
+  const description = formData.get("description") as string;
+  
+  let brandId = formData.get("brandId") as string;
+  const newBrandName = formData.get("newBrandName") as string;
+  
+  let categoryId = formData.get("categoryId") as string;
+  const newCategoryName = formData.get("newCategoryName") as string;
+  
+  const isB2C = formData.get("isB2C") === "on";
+  const isB2B = formData.get("isB2B") === "on";
+
+  const sku = formData.get("sku") as string;
+  const barcode = formData.get("barcode") as string;
+  
+  const retailPrice = Math.max(0, Number(formData.get("retailPrice")) || 0);
+  const listA = Math.max(0, Number(formData.get("listA")) || 0);
+  const listB = Math.max(0, Number(formData.get("listB")) || 0);
+  const listC = Math.max(0, Number(formData.get("listC")) || listB);
+  const listD = Math.max(0, Number(formData.get("listD")) || listB);
+  const taxRate = Math.max(0, Number(formData.get("taxRate")) || 20);
+  
+  const totalStock = Math.max(0, Number(formData.get("totalStock")) || 0);
+  const b2cReserveRatio = Math.max(0, Math.min(100, Number(formData.get("b2cReserveRatio")) || 0));
+
+  try {
+    if (newBrandName) {
+      const newBrand = await prisma.brand.create({
+        data: {
+          name: newBrandName,
+          slug: newBrandName.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now().toString().slice(-4),
+        }
+      });
+      brandId = newBrand.id;
+    }
+
+    if (newCategoryName) {
+      const newCategory = await prisma.category.create({
+        data: {
+          name: newCategoryName,
+          slug: newCategoryName.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now().toString().slice(-4),
+        }
+      });
+      categoryId = newCategory.id;
+    }
+
+    // Parse existing images that were kept
+    const keptImagesJson = formData.get("keptImages") as string;
+    const keptImages = keptImagesJson ? JSON.parse(keptImagesJson) : [];
+
+    const processedImages = await processImages(formData, keptImages, name);
+
+    await prisma.product.update({
+      where: { id: productId },
+      data: {
+        name,
+        description,
+        brandId,
+        categoryId,
+        isB2C,
+        isB2B,
+      }
+    });
+
+    await prisma.variant.update({
+      where: { id: variantId },
+      data: {
+        sku,
+        barcode,
+        images: processedImages,
+      }
+    });
+
+    await prisma.price.update({
+      where: { variantId: variantId },
+      data: {
+        retailPrice,
+        listA,
+        listB,
+        listC,
+        listD,
+        taxRate,
+      }
+    });
+
+    await prisma.inventory.update({
+      where: { variantId: variantId },
+      data: {
+        totalStock,
+        b2cReserveRatio,
+      }
+    });
+
+  } catch (error) {
+    console.error("Error updating product:", error);
+    throw new Error("Ürün güncellenirken bir hata oluştu.");
+  }
+
+  revalidatePath("/products");
+  redirect("/products?success=updated");
+}
