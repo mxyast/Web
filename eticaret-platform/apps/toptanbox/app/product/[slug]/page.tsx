@@ -62,7 +62,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                   Teknik Özellikler
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
-                  {defaultVariant?.attributes.map((attr) => (
+                  {defaultVariant?.attributes.map((attr: any) => (
                     <div key={attr.id} className="flex justify-between py-3 border-b border-gray-100">
                       <span className="text-sm text-gray-500">{attr.key}</span>
                       <span className="text-sm font-bold text-slate-900">{attr.value} {attr.unit || ""}</span>

@@ -24,7 +24,7 @@ export default async function ProductsPage({
     platform: "B2B",
   });
 
-  const products = await Promise.all(productsRaw.map(async (p) => {
+  const products = await Promise.all(productsRaw.map(async (p: any) => {
     const firstVariantId = p.variants[0]?.id;
     const availableStock = firstVariantId ? await getB2BAvailableStock(firstVariantId) : 0;
     return { ...p, availableStock };
@@ -72,7 +72,7 @@ export default async function ProductsPage({
                       <div>
                          <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 block">Kategoriler</label>
                          <div className="space-y-3">
-                            {categories.map(c => (
+                            {categories.map((c: any) => (
                                <Link 
                                  key={c.id} 
                                  href={`/products?cat=${c.id}${isListView ? '&view=list' : ''}`}
@@ -88,7 +88,7 @@ export default async function ProductsPage({
                       <div>
                          <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 block">Markalar</label>
                          <div className="space-y-3">
-                            {brands.map(b => (
+                            {brands.map((b: any) => (
                                <Link 
                                  key={b.id} 
                                  href={`/products?brand=${b.id}${isListView ? '&view=list' : ''}`}

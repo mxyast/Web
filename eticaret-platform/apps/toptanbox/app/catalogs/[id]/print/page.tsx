@@ -88,7 +88,7 @@ export default async function CatalogPrintPage({ params }: { params: Promise<{ i
             <h2 className="text-2xl font-black text-slate-900 mb-8 border-b-2 border-slate-900 pb-4">Ürün Listesi</h2>
             
             <div className="grid grid-cols-3 gap-6">
-               {products.map(product => {
+                {products.map((product: any) => {
                   const variant = product.variants[0];
                   const price = variant?.price;
                   return (

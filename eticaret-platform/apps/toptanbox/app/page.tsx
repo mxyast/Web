@@ -22,7 +22,7 @@ export default async function Home() {
   });
 
   // Calculate B2B available stock for each product's first variant
-  const products = await Promise.all(productsRaw.map(async (p) => {
+  const products = await Promise.all(productsRaw.map(async (p: any) => {
     const firstVariantId = p.variants[0]?.id;
     const availableStock = firstVariantId ? await getB2BAvailableStock(firstVariantId) : 0;
     return { ...p, availableStock };
