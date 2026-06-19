@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { syncInventoryFromExternal } from "@eticaret/database";
+import { checkAdminAccess } from "../../../../auth";
 
 export async function POST() {
   try {
+    await checkAdminAccess();
     const results = await syncInventoryFromExternal();
     return NextResponse.json({
       success: true,

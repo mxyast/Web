@@ -36,7 +36,7 @@ export const Navbar = ({ platform, user }: NavbarProps) => {
 
   const announcements = [
     "1500 TL ÜZERİ ALIŞVERİŞLERDE ÜCRETSİZ KARGO",
-    "İLK ALIŞVERİŞE ÖZEL %10 İNDİRİM: MIOJI10",
+    "İLK ALIŞVERİŞE ÖZEL %10 İNDİRİM: typec10",
     "AYNI GÜN HIZLI TESLİMAT SEÇENEĞİ"
   ];
 
@@ -219,16 +219,16 @@ export const Navbar = ({ platform, user }: NavbarProps) => {
 
               <div className="pt-8 border-t border-gray-100 space-y-4">
                 {user ? (
-                  <Link 
-                    href="/profile" 
+                  <Link
+                    href="/profile"
                     onClick={() => setIsMenuOpen(false)}
                     className="block w-full py-4 bg-[#1A1A1A] text-white text-center rounded-2xl font-bold text-sm uppercase tracking-widest"
                   >
                     Profilim
                   </Link>
                 ) : (
-                  <Link 
-                    href="/auth/login" 
+                  <Link
+                    href="/auth/login"
                     onClick={() => setIsMenuOpen(false)}
                     className="block w-full py-4 bg-[#1A1A1A] text-white text-center rounded-2xl font-bold text-sm uppercase tracking-widest"
                   >

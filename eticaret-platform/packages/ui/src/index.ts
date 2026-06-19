@@ -6,5 +6,6 @@ export * from "./button";
 export * from "./input";
 export * from "./card";
 export * from "./product-card";
+export * from "./product-slider";
 export * from "./search-bar";
 export * from "./code";

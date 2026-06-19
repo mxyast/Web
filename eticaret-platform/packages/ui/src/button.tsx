@@ -21,7 +21,7 @@ export const Button = ({
   ...props
 }: ButtonProps) => {
   const variants = {
-    primary: "bg-[var(--color-primary, #000)] text-white hover:opacity-90 shadow-sm",
+    primary: "bg-[#1A1A1A] text-white hover:opacity-90 shadow-sm",
     secondary: "bg-[var(--color-secondary, #f3f4f6)] text-[var(--color-text, #000)] hover:bg-opacity-80",
     outline: "border border-[var(--color-border, #e5e7eb)] bg-transparent hover:bg-gray-50",
     neon: "bg-black text-white shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:shadow-[0_0_30px_rgba(0,240,255,0.5)] border border-[var(--color-neon-blue, #00f0ff)]/50",

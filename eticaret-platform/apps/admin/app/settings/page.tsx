@@ -1,21 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Settings, Shield, Bell, Globe, Database, Save, Key, Lock, AlertTriangle, RefreshCw, Download, Trash2 } from "lucide-react";
 import { Header } from "../../components/Header";
+import { getAllowedRoles, updateAllowedRoles } from "./actions";
 
 type TabType = "general" | "security" | "notifications" | "localization" | "database";
 
 export default function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>("general");
   const [isSaving, setIsSaving] = useState(false);
+  const [allowedRoles, setAllowedRoles] = useState<string[]>(["ADMIN"]);
 
-  const handleSave = () => {
+  useEffect(() => {
+    getAllowedRoles().then(setAllowedRoles);
+  }, []);
+
+  const handleSave = async () => {
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      await updateAllowedRoles(allowedRoles);
       alert("Ayarlar başarıyla kaydedildi.");
-    }, 800);
+    } catch (err: any) {
+      alert(err.message || "Ayarlar kaydedilirken hata oluştu.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const tabs = [
@@ -119,18 +129,44 @@ export default function AdminSettingsPage() {
                           </div>
 
                           <div className="space-y-4 pt-6 border-t border-gray-50">
-                             <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                               <Lock className="w-4 h-4 text-gray-400" /> İki Aşamalı Doğrulama (2FA)
-                             </h4>
-                             <div className="p-6 bg-blue-50 border border-blue-100 rounded-2xl flex items-start gap-4">
-                                <Shield className="w-6 h-6 text-blue-600 shrink-0" />
-                                <div>
-                                   <p className="text-sm font-bold text-blue-900 mb-1">Tüm yöneticiler için 2FA zorunlu yap</p>
-                                   <p className="text-xs text-blue-700 mb-4">Bu ayar etkinleştirildiğinde, sisteme giriş yapan tüm admin yetkili kullanıcılar Google Authenticator veya SMS ile doğrulanmak zorundadır.</p>
-                                   <button className="px-6 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-colors">Aktifleştir</button>
-                                </div>
-                             </div>
-                          </div>
+                              <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <Shield className="w-4 h-4 text-gray-400" /> Admin Paneli Erişim Yetkileri
+                              </h4>
+                              <p className="text-xs text-gray-500 mb-2">Admin paneline giriş izni verilecek kullanıcı rollerini seçin (En az bir rol seçilmelidir).</p>
+                              <div className="grid grid-cols-3 gap-4">
+                                 {["ADMIN", "DEALER", "CUSTOMER"].map((role) => (
+                                    <label key={role} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl cursor-pointer hover:bg-gray-100 transition-colors">
+                                       <span className="text-sm font-bold text-slate-700">{role}</span>
+                                       <input
+                                          type="checkbox"
+                                          checked={allowedRoles.includes(role)}
+                                          onChange={(e) => {
+                                             if (e.target.checked) {
+                                                setAllowedRoles([...allowedRoles, role]);
+                                             } else {
+                                                setAllowedRoles(allowedRoles.filter(r => r !== role));
+                                             }
+                                          }}
+                                          className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                       />
+                                    </label>
+                                 ))}
+                              </div>
+                           </div>
+
+                           <div className="space-y-4 pt-6 border-t border-gray-50">
+                              <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                <Lock className="w-4 h-4 text-gray-400" /> İki Aşamalı Doğrulama (2FA)
+                              </h4>
+                              <div className="p-6 bg-blue-50 border border-blue-100 rounded-2xl flex items-start gap-4">
+                                 <Shield className="w-6 h-6 text-blue-600 shrink-0" />
+                                 <div>
+                                    <p className="text-sm font-bold text-blue-900 mb-1">Tüm yöneticiler için 2FA zorunlu yap</p>
+                                    <p className="text-xs text-blue-700 mb-4">Bu ayar etkinleştirildiğinde, sisteme giriş yapan tüm admin yetkili kullanıcılar Google Authenticator veya SMS ile doğrulanmak zorundadır.</p>
+                                    <button className="px-6 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-colors">Aktifleştir</button>
+                                 </div>
+                              </div>
+                           </div>
 
                           <div className="pt-6 border-t border-gray-50 flex justify-end">
                              <button onClick={handleSave} disabled={isSaving} className="bg-slate-900 text-white text-xs font-bold px-10 py-4 rounded-2xl hover:bg-black transition-all flex items-center gap-3 shadow-xl shadow-slate-900/20 disabled:opacity-70">

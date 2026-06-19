@@ -12,18 +12,26 @@ type Product = {
 
 export default function CatalogProductSelector({ 
   brands, 
-  categories 
+  categories,
+  initialBrandId = "",
+  initialCategoryId = "",
+  initialIncludedProductIds = []
 }: { 
   brands: any[], 
-  categories: any[] 
+  categories: any[],
+  initialBrandId?: string,
+  initialCategoryId?: string,
+  initialIncludedProductIds?: string[]
 }) {
-  const [brandId, setBrandId] = useState("");
-  const [categoryId, setCategoryId] = useState("");
+  const [brandId, setBrandId] = useState(initialBrandId);
+  const [categoryId, setCategoryId] = useState(initialCategoryId);
   const [products, setProducts] = useState<Product[]>([]);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set(initialIncludedProductIds));
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // If brand or category changes after initial load, we fetch new products.
+  // We keep selectedIds only if they were passed initially, else we reset if category/brand changes manually.
   useEffect(() => {
     async function loadProducts() {
       setIsLoading(true);
@@ -31,7 +39,11 @@ export default function CatalogProductSelector({
       try {
         const data = await getProductsForCatalog(brandId, categoryId);
         setProducts(data);
-        setSelectedIds(new Set());
+        
+        // Sadece ilk yüklemede değil, marka/kategori değiştiğinde eğer initialBrandId ile eşleşmiyorsa seçimi sıfırla
+        if (brandId !== initialBrandId || categoryId !== initialCategoryId) {
+            setSelectedIds(new Set());
+        }
       } catch (err: any) {
         console.error(err);
         setErrorMsg(err.message || "Bilinmeyen bir hata oluştu.");
@@ -40,7 +52,7 @@ export default function CatalogProductSelector({
       }
     }
     loadProducts();
-  }, [brandId, categoryId]);
+  }, [brandId, categoryId, initialBrandId, initialCategoryId]);
 
   const toggleSelectAll = () => {
     if (selectedIds.size === products.length) {

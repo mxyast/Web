@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { updateOrderStatus } from "@eticaret/database";
 import { OrderStatus } from "@prisma/client";
+import { checkAdminAccess } from "../../../../../auth";
 
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await checkAdminAccess();
     const { id } = await params;
     const { status } = await req.json();
 

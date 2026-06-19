@@ -17,16 +17,33 @@ const nextAuth = NextAuth({
         }
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { email: (credentials.email as string).toLowerCase() },
         })
 
-        if (!user || !user.isActive) {
+        if (!user) {
           return null
         }
 
-        // ONLY allow admins to login to Admin Panel
-        if (user.role !== "ADMIN") {
-           return null
+        if (!user.isActive) {
+          await prisma.userActionRequest.create({
+            data: {
+              userId: user.id,
+              actionType: "ADMIN_LOGIN_ATTEMPT",
+              description: `Pasif durumdaki kullanıcı admin paneline giriş yapmaya çalıştı.`,
+              status: "PENDING"
+            }
+          });
+          throw new Error("SUSPENDED");
+        }
+
+        // Fetch dynamic allowed roles for Admin Panel login
+        const allowedRolesSetting = await prisma.systemSetting.findUnique({
+          where: { key: "admin_allowed_roles" }
+        });
+        const allowedRoles = allowedRolesSetting ? allowedRolesSetting.value.split(",") : ["ADMIN"];
+
+        if (!allowedRoles.includes(user.role)) {
+           return null;
         }
 
         const isValidPassword = await bcrypt.compare(
@@ -76,3 +93,20 @@ export const signIn = nextAuth.signIn;
 export const signOut = nextAuth.signOut;
 export const auth: any = nextAuth.auth;
 
+export async function checkAdminAccess() {
+  const session = await auth();
+  if (!session?.user) {
+    throw new Error("Erişim Reddedildi: Lütfen giriş yapın.");
+  }
+  
+  const allowedRolesSetting = await prisma.systemSetting.findUnique({
+    where: { key: "admin_allowed_roles" }
+  });
+  const allowedRoles = allowedRolesSetting ? allowedRolesSetting.value.split(",") : ["ADMIN"];
+
+  if (!allowedRoles.includes(session.user.role)) {
+    throw new Error("Erişim Reddedildi: Yetkisiz işlem.");
+  }
+
+  return session.user;
+}

@@ -2,10 +2,10 @@
 
 import React from "react";
 import Link from "next/link";
-import { 
-  Truck, 
-  ShieldCheck, 
-  Headphones, 
+import {
+  Truck,
+  ShieldCheck,
+  Headphones,
   CreditCard,
   ArrowRight
 } from "lucide-react";
@@ -46,9 +46,9 @@ export const Footer = ({ platform }: FooterProps) => {
   const isTypeC = platform === "TYPEC";
 
   return (
-    <footer className="bg-white font-sans">
+    <footer className="bg-gray-100 font-sans">
       {/* Trust Bar */}
-      <div className="border-y border-gray-100 py-16">
+      <div className="border-y border-gray-100 py-24 md:py-32 bg-white">
         <div className="max-w-[1440px] mx-auto px-6 md:px-12">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
             {[
@@ -58,7 +58,8 @@ export const Footer = ({ platform }: FooterProps) => {
               { icon: CreditCard, title: "TAKSİT İMKANI", desc: "Tüm Kartlara 12 Taksit" }
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-6 group">
-                <div className="w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center text-[#1A1A1A] group-hover:bg-[#E31E24] group-hover:text-white transition-all duration-300">
+                <div className={`w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center text-[#1A1A1A] transition-all duration-300 group-hover:text-white ${isTypeC ? "group-hover:bg-[#E31E24]" : "group-hover:bg-orange-500"
+                  }`}>
                   <item.icon className="w-6 h-6 stroke-[1.5]" />
                 </div>
                 <div>
@@ -74,15 +75,15 @@ export const Footer = ({ platform }: FooterProps) => {
       {/* Main Footer Content */}
       <div className="py-24 max-w-[1440px] mx-auto px-6 md:px-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-16 md:gap-24">
-          
+
           {/* Brand & Newsletter */}
           <div className="lg:col-span-4 space-y-10">
             <Link href="/" className="inline-block">
-               <span className="text-3xl font-black tracking-tighter text-[#E31E24]" style={{ fontFamily: 'var(--font-heading)' }}>
-                 {isTypeC ? "TYPEC" : "TOPTANBOX"}
-               </span>
+              <span className={`text-3xl font-black tracking-tighter ${isTypeC ? "text-[#E31E24]" : "text-orange-500"}`} style={{ fontFamily: 'var(--font-heading)' }}>
+                {isTypeC ? "Type-C" : "ToptanBOX"}
+              </span>
             </Link>
-            
+
             <p className="text-sm text-gray-400 leading-relaxed max-w-sm font-medium">
               Geleceğin teknolojisini, minimalist tasarım ve maksimum performansla birleştiriyoruz. Yaşam tarzınızı teknolojiyle şekillendirin.
             </p>
@@ -90,12 +91,13 @@ export const Footer = ({ platform }: FooterProps) => {
             <div className="space-y-4 pt-4">
               <h5 className="text-[11px] font-bold tracking-[0.2em] text-[#1A1A1A] uppercase">Bültene Katılın</h5>
               <div className="flex gap-2">
-                <input 
-                  type="email" 
-                  placeholder="E-posta adresiniz" 
+                <input
+                  type="email"
+                  placeholder="E-posta adresiniz"
                   className="flex-1 bg-gray-50 border-none rounded-full py-3.5 px-6 text-xs font-bold outline-none ring-1 ring-transparent focus:ring-[#1A1A1A] transition-all"
                 />
-                <button className="w-12 h-12 bg-[#1A1A1A] text-white rounded-full flex items-center justify-center hover:bg-[#E31E24] transition-all duration-300">
+                <button className={`w-12 h-12 text-white rounded-full flex items-center justify-center transition-all duration-300 ${isTypeC ? "bg-[#1A1A1A] hover:bg-[#E31E24]" : "bg-slate-900 hover:bg-orange-500"
+                  }`}>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
@@ -106,9 +108,15 @@ export const Footer = ({ platform }: FooterProps) => {
           <div className="lg:col-span-2">
             <h5 className="text-[11px] font-bold tracking-[0.2em] text-[#1A1A1A] uppercase mb-10" style={{ fontFamily: 'var(--font-heading)' }}>Kurumsal</h5>
             <ul className="space-y-4">
-              {["Hakkımızda", "Kariyer", "Sürdürülebilirlik", "Mağazalarımız", "İletişim"].map((link) => (
-                <li key={link}>
-                  <Link href="#" className="text-sm text-gray-400 hover:text-[#E31E24] transition-colors font-medium">{link}</Link>
+              {[
+                { name: "Hakkımızda", href: "#" },
+                { name: "Kariyer", href: "#" },
+                { name: "Sürdürülebilirlik", href: "#" },
+                { name: "Mağazalarımız", href: "#" },
+                { name: "İletişim", href: isTypeC ? "/contact" : "#" }
+              ].map((link) => (
+                <li key={link.name}>
+                  <Link href={link.href} className="text-sm text-gray-400 hover:text-[#E31E24] transition-colors font-medium">{link.name}</Link>
                 </li>
               ))}
             </ul>
@@ -129,9 +137,9 @@ export const Footer = ({ platform }: FooterProps) => {
             <h5 className="text-[11px] font-bold tracking-[0.2em] text-[#1A1A1A] uppercase mb-10" style={{ fontFamily: 'var(--font-heading)' }}>Bizi Takip Edin</h5>
             <div className="flex flex-wrap gap-4 mb-10">
               {[Instagram, Facebook, Twitter, Youtube].map((Icon, i) => (
-                <Link 
-                  key={i} 
-                  href="#" 
+                <Link
+                  key={i}
+                  href="#"
                   className="w-12 h-12 rounded-full border border-gray-100 flex items-center justify-center text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white transition-all duration-300"
                 >
                   <Icon className="w-5 h-5 stroke-[1.5]" />
@@ -139,8 +147,9 @@ export const Footer = ({ platform }: FooterProps) => {
               ))}
             </div>
             <div className="p-8 rounded-3xl bg-gray-50 border border-gray-100">
-               <p className="text-[11px] font-bold text-[#1A1A1A] mb-2 uppercase tracking-widest">Müşteri Hizmetleri</p>
-               <Link href="tel:08501234567" className="text-xl font-black text-[#1A1A1A] hover:text-[#E31E24] transition-colors">0850 123 45 67</Link>
+              <p className="text-[11px] font-bold text-[#1A1A1A] mb-2 uppercase tracking-widest">Müşteri Hizmetleri</p>
+              <Link href="tel:08501234567" className={`text-xl font-black text-[#1A1A1A] transition-colors ${isTypeC ? "hover:text-[#E31E24]" : "hover:text-orange-500"
+                }`}>0850 123 45 67</Link>
             </div>
           </div>
         </div>
@@ -154,16 +163,16 @@ export const Footer = ({ platform }: FooterProps) => {
               © 2026 {platform} • TÜM HAKLARI SAKLIDIR.
             </p>
             <div className="flex gap-4">
-               <Link href="#" className="text-[10px] font-bold text-gray-400 hover:text-[#1A1A1A] transition-colors uppercase tracking-widest">KVKK</Link>
-               <Link href="#" className="text-[10px] font-bold text-gray-400 hover:text-[#1A1A1A] transition-colors uppercase tracking-widest">Çerez Politikası</Link>
+              <Link href="#" className="text-[10px] font-bold text-gray-400 hover:text-[#1A1A1A] transition-colors uppercase tracking-widest">KVKK</Link>
+              <Link href="#" className="text-[10px] font-bold text-gray-400 hover:text-[#1A1A1A] transition-colors uppercase tracking-widest">Çerez Politikası</Link>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-8 grayscale opacity-30 hover:opacity-100 hover:grayscale-0 transition-all duration-700">
-             <img src="https://cdn.paytr.com/logos/visa.svg" alt="Visa" className="h-4" />
-             <img src="https://cdn.paytr.com/logos/mastercard.svg" alt="Mastercard" className="h-4" />
-             <img src="https://cdn.paytr.com/logos/troy.svg" alt="Troy" className="h-5" />
-             <div className="text-[10px] font-black tracking-widest text-[#1A1A1A]">IYZICO</div>
+            <img src="https://cdn.paytr.com/logos/visa.svg" alt="Visa" className="h-4" />
+            <img src="https://cdn.paytr.com/logos/mastercard.svg" alt="Mastercard" className="h-4" />
+            <img src="https://cdn.paytr.com/logos/troy.svg" alt="Troy" className="h-5" />
+            <div className="text-[10px] font-black tracking-widest text-[#1A1A1A]">IYZICO</div>
           </div>
         </div>
       </div>

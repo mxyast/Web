@@ -1,39 +1,45 @@
-@import "tailwindcss"; 
+@import "tailwindcss";
+@source "../../../packages/ui/src/**/*.tsx";
 
 @theme {
-  --color-mioji-red: #E31E24;
-  --color-mioji-bg: #FFFFFF;
-  --color-mioji-card: #FBFBFB;
-  --color-mioji-text: #1A1A1A;
-  --color-mioji-muted: #666666;
-  --color-mioji-border: #EBEBEB;
-  --color-mioji-light: #F8F8F8;
-  --color-mioji-dark: #111111;
+  --color-typec-red: #E31E24;
+  --color-typec-bg: #FFFFFF;
+  --color-typec-card: #FBFBFB;
+  --color-typec-text: #1A1A1A;
+  --color-typec-muted: #666666;
+  --color-typec-border: #EBEBEB;
+  --color-typec-light: #F8F8F8;
+  --color-typec-dark: #111111;
 
   --font-sans: var(--font-inter), system-ui, sans-serif;
   --font-heading: var(--font-montserrat), system-ui, sans-serif;
-  
-  --radius-mioji: 1rem;
-  --radius-mioji-sm: 0.5rem;
-  --radius-mioji-xs: 0.25rem;
+
+  --radius-typec: 1rem;
+  --radius-typec-sm: 0.5rem;
+  --radius-typec-xs: 0.25rem;
   --radius-full: 9999px;
 
-  --shadow-mioji: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
-  --shadow-mioji-hover: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+  --shadow-typec: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
+  --shadow-typec-hover: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
 }
 
 @layer base {
   body {
-    background-color: var(--color-mioji-bg);
-    color: var(--color-mioji-text);
+    background-color: var(--color-typec-bg);
+    color: var(--color-typec-text);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     letter-spacing: -0.01em;
     scroll-behavior: smooth;
-    @apply selection:bg-mioji-red selection:text-white;
+    @apply selection:bg-typec-red selection:text-white;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-heading);
     @apply font-bold tracking-tight;
   }
@@ -42,13 +48,16 @@
   ::-webkit-scrollbar {
     width: 6px;
   }
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }
+
   ::-webkit-scrollbar-thumb {
     background: #E5E5E5;
     border-radius: 10px;
   }
+
   ::-webkit-scrollbar-thumb:hover {
     background: #D1D1D1;
   }
@@ -58,28 +67,36 @@
   .container-wide {
     @apply max-w-[1440px] mx-auto px-4 md:px-8;
   }
-  
+
   .btn-primary {
-    @apply bg-[#1A1A1A] text-white px-8 py-3 rounded-full font-bold text-sm hover:bg-mioji-red transition-all duration-300 shadow-lg shadow-black/5 active:scale-95;
+    @apply bg-[#1A1A1A] text-white px-8 py-3 rounded-full font-bold text-sm hover:bg-typec-red transition-all duration-300 shadow-lg shadow-black/5 active:scale-95;
   }
-  
+
   .btn-outline {
     @apply border border-[#1A1A1A] text-[#1A1A1A] px-8 py-3 rounded-full font-bold text-sm hover:bg-[#1A1A1A] hover:text-white transition-all duration-300 active:scale-95;
   }
 
-  .card-mioji {
-    @apply bg-mioji-card border border-gray-100 rounded-mioji p-8 transition-all duration-700 hover:shadow-mioji-hover hover:border-white;
+  .card-typec {
+    @apply bg-typec-card border border-gray-100 rounded-typec p-8 transition-all duration-700 hover:shadow-typec-hover hover:border-white;
   }
 
-  .glass-mioji {
+  .glass-typec {
     @apply bg-white/70 backdrop-blur-2xl border border-white/20;
   }
 }
 
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 .animate-float {

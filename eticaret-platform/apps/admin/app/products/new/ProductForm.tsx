@@ -37,6 +37,33 @@ export function ProductForm({ brands, categories, product = null }: { brands: an
   const inventory = variant?.inventory || {};
   const price = variant?.price || {};
 
+  const [variants, setVariants] = useState<Array<{ id?: string, color: string, sku: string, barcode?: string, totalStock: number }>>(
+    isEditing && product.variants?.length > 0
+      ? product.variants.map((v: any) => ({
+          id: v.id,
+          color: v.color || "",
+          sku: v.sku,
+          barcode: v.barcode || "",
+          totalStock: v.inventory?.totalStock || 0,
+        }))
+      : [{ color: "", sku: "", barcode: "", totalStock: 0 }]
+  );
+
+  const handleAddVariant = () => {
+    setVariants([...variants, { color: "", sku: "", barcode: "", totalStock: 0 }]);
+  };
+
+  const handleRemoveVariant = (index: number) => {
+    if (variants.length === 1) return;
+    setVariants(variants.filter((_, i) => i !== index));
+  };
+
+  const handleVariantChange = (index: number, field: string, value: any) => {
+    setVariants(
+      variants.map((v, i) => (i === index ? { ...v, [field]: value } : v))
+    );
+  };
+
   const [isNewBrand, setIsNewBrand] = useState(false);
   const [isNewCategory, setIsNewCategory] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -112,6 +139,8 @@ export function ProductForm({ brands, categories, product = null }: { brands: an
           }
         }
       });
+
+      formData.append('variantsJson', JSON.stringify(variants));
 
       if (isEditing) {
         await updateProduct(product.id, variant.id, formData);
@@ -324,23 +353,83 @@ export function ProductForm({ brands, categories, product = null }: { brands: an
 
           {/* Inventory & SKU */}
           <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-8">
-            <div className="flex items-center gap-2 mb-6">
-              <Boxes className="w-5 h-5 text-gray-400" />
-              <h2 className="text-sm font-black uppercase tracking-widest text-slate-800">Stok & Varyant</h2>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <Boxes className="w-5 h-5 text-gray-400" />
+                <h2 className="text-sm font-black uppercase tracking-widest text-slate-800">Renk Varyantları</h2>
+              </div>
+              <button
+                type="button"
+                onClick={handleAddVariant}
+                className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors"
+              >
+                + Renk Ekle
+              </button>
             </div>
+            
             <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">Stok Kodu (SKU)</label>
-                <input required name="sku" type="text" defaultValue={variant?.sku} placeholder="Örn: BAS-65W-BLK" className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all uppercase" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">Barkod</label>
-                <input name="barcode" type="text" defaultValue={variant?.barcode} placeholder="EAN / UPC" className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">Toplam Stok</label>
-                <input required min="0" name="totalStock" type="number" defaultValue={inventory?.totalStock || 0} className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all" />
-              </div>
+              {variants.map((v, index) => (
+                <div key={index} className="p-5 bg-gray-50 border border-gray-100 rounded-2xl relative space-y-4">
+                  {variants.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveVariant(index)}
+                      className="absolute top-4 right-4 text-xs font-bold text-red-500 hover:text-red-700"
+                    >
+                      Kaldır
+                    </button>
+                  )}
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">Renk Adı</label>
+                      <input
+                        required
+                        type="text"
+                        value={v.color}
+                        onChange={(e) => handleVariantChange(index, "color", e.target.value)}
+                        placeholder="Örn: Siyah / Gümüş"
+                        className="w-full bg-white border border-gray-100 rounded-2xl py-3 px-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">Stok Kodu (SKU)</label>
+                      <input
+                        required
+                        type="text"
+                        value={v.sku}
+                        onChange={(e) => handleVariantChange(index, "sku", e.target.value)}
+                        placeholder="Örn: BAS-65W-BLK"
+                        className="w-full bg-white border border-gray-100 rounded-2xl py-3 px-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all uppercase"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">Barkod (EAN/UPC)</label>
+                      <input
+                        type="text"
+                        value={v.barcode}
+                        onChange={(e) => handleVariantChange(index, "barcode", e.target.value)}
+                        placeholder="Opsiyonel"
+                        className="w-full bg-white border border-gray-100 rounded-2xl py-3 px-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">Toplam Stok</label>
+                      <input
+                        required
+                        min="0"
+                        type="number"
+                        value={v.totalStock}
+                        onChange={(e) => handleVariantChange(index, "totalStock", Number(e.target.value))}
+                        className="w-full bg-white border border-gray-100 rounded-2xl py-3 px-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

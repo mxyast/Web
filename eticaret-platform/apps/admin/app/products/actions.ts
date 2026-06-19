@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { writeFile } from "fs/promises";
 import path from "path";
+import { checkAdminAccess } from "../../auth";
 
 async function processImages(formData: FormData, existingImages: string[], productName: string) {
   const imageUrls = formData.getAll("imageUrls") as string[];
@@ -35,6 +36,7 @@ async function processImages(formData: FormData, existingImages: string[], produ
 }
 
 export async function createProduct(formData: FormData) {
+  await checkAdminAccess();
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
   
@@ -49,8 +51,8 @@ export async function createProduct(formData: FormData) {
   const isB2C = formData.get("isB2C") === "on";
   const isB2B = formData.get("isB2B") === "on";
 
-  const sku = formData.get("sku") as string;
-  const barcode = formData.get("barcode") as string;
+  const variantsJson = formData.get("variantsJson") as string;
+  const variantsData = variantsJson ? JSON.parse(variantsJson) : [];
   
   const retailPrice = Math.max(0, Number(formData.get("retailPrice")) || 0);
   const listA = Math.max(0, Number(formData.get("listA")) || 0);
@@ -59,7 +61,6 @@ export async function createProduct(formData: FormData) {
   const listD = Math.max(0, Number(formData.get("listD")) || listB);
   const taxRate = Math.max(0, Number(formData.get("taxRate")) || 20);
   
-  const totalStock = Math.max(0, Number(formData.get("totalStock")) || 0);
   const b2cReserveRatio = Math.max(0, Math.min(100, Number(formData.get("b2cReserveRatio")) || 0));
 
   try {
@@ -97,34 +98,37 @@ export async function createProduct(formData: FormData) {
       }
     });
 
-    const variant = await prisma.variant.create({
-      data: {
-        productId: product.id,
-        sku,
-        barcode,
-        images: processedImages,
-      }
-    });
+    for (const vData of variantsData) {
+      const variant = await prisma.variant.create({
+        data: {
+          productId: product.id,
+          sku: vData.sku,
+          barcode: vData.barcode || null,
+          color: vData.color || null,
+          images: processedImages,
+        }
+      });
 
-    await prisma.price.create({
-      data: {
-        variantId: variant.id,
-        retailPrice,
-        listA,
-        listB,
-        listC,
-        listD,
-        taxRate,
-      }
-    });
+      await prisma.price.create({
+        data: {
+          variantId: variant.id,
+          retailPrice,
+          listA,
+          listB,
+          listC,
+          listD,
+          taxRate,
+        }
+      });
 
-    await prisma.inventory.create({
-      data: {
-        variantId: variant.id,
-        totalStock,
-        b2cReserveRatio,
-      }
-    });
+      await prisma.inventory.create({
+        data: {
+          variantId: variant.id,
+          totalStock: Number(vData.totalStock) || 0,
+          b2cReserveRatio,
+        }
+      });
+    }
 
   } catch (error) {
     console.error("Error creating product:", error);
@@ -136,6 +140,7 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function updateProduct(productId: string, variantId: string, formData: FormData) {
+  await checkAdminAccess();
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
   
@@ -148,8 +153,8 @@ export async function updateProduct(productId: string, variantId: string, formDa
   const isB2C = formData.get("isB2C") === "on";
   const isB2B = formData.get("isB2B") === "on";
 
-  const sku = formData.get("sku") as string;
-  const barcode = formData.get("barcode") as string;
+  const variantsJson = formData.get("variantsJson") as string;
+  const variantsData = variantsJson ? JSON.parse(variantsJson) : [];
   
   const retailPrice = Math.max(0, Number(formData.get("retailPrice")) || 0);
   const listA = Math.max(0, Number(formData.get("listA")) || 0);
@@ -158,7 +163,6 @@ export async function updateProduct(productId: string, variantId: string, formDa
   const listD = Math.max(0, Number(formData.get("listD")) || listB);
   const taxRate = Math.max(0, Number(formData.get("taxRate")) || 20);
   
-  const totalStock = Math.max(0, Number(formData.get("totalStock")) || 0);
   const b2cReserveRatio = Math.max(0, Math.min(100, Number(formData.get("b2cReserveRatio")) || 0));
 
   try {
@@ -200,34 +204,97 @@ export async function updateProduct(productId: string, variantId: string, formDa
       }
     });
 
-    await prisma.variant.update({
-      where: { id: variantId },
-      data: {
-        sku,
-        barcode,
-        images: processedImages,
-      }
+    const existingVariants = await prisma.variant.findMany({
+      where: { productId }
     });
+    const existingIds = existingVariants.map(ev => ev.id);
+    const updatedIds: string[] = [];
 
-    await prisma.price.update({
-      where: { variantId: variantId },
-      data: {
-        retailPrice,
-        listA,
-        listB,
-        listC,
-        listD,
-        taxRate,
-      }
-    });
+    for (const vData of variantsData) {
+      if (vData.id) {
+        updatedIds.push(vData.id);
+        await prisma.variant.update({
+          where: { id: vData.id },
+          data: {
+            sku: vData.sku,
+            barcode: vData.barcode || null,
+            color: vData.color || null,
+            images: processedImages,
+          }
+        });
 
-    await prisma.inventory.update({
-      where: { variantId: variantId },
-      data: {
-        totalStock,
-        b2cReserveRatio,
+        await prisma.price.upsert({
+          where: { variantId: vData.id },
+          update: {
+            retailPrice,
+            listA,
+            listB,
+            listC,
+            listD,
+            taxRate,
+          },
+          create: {
+            variantId: vData.id,
+            retailPrice,
+            listA,
+            listB,
+            listC,
+            listD,
+            taxRate,
+          }
+        });
+
+        await prisma.inventory.upsert({
+          where: { variantId: vData.id },
+          update: {
+            totalStock: Number(vData.totalStock) || 0,
+            b2cReserveRatio,
+          },
+          create: {
+            variantId: vData.id,
+            totalStock: Number(vData.totalStock) || 0,
+            b2cReserveRatio,
+          }
+        });
+      } else {
+        const newVar = await prisma.variant.create({
+          data: {
+            productId,
+            sku: vData.sku,
+            barcode: vData.barcode || null,
+            color: vData.color || null,
+            images: processedImages,
+          }
+        });
+
+        await prisma.price.create({
+          data: {
+            variantId: newVar.id,
+            retailPrice,
+            listA,
+            listB,
+            listC,
+            listD,
+            taxRate,
+          }
+        });
+
+        await prisma.inventory.create({
+          data: {
+            variantId: newVar.id,
+            totalStock: Number(vData.totalStock) || 0,
+            b2cReserveRatio,
+          }
+        });
       }
-    });
+    }
+
+    const toDeleteIds = existingIds.filter(id => !updatedIds.includes(id));
+    if (toDeleteIds.length > 0) {
+      await prisma.variant.deleteMany({
+        where: { id: { in: toDeleteIds } }
+      });
+    }
 
   } catch (error) {
     console.error("Error updating product:", error);

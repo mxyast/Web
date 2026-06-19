@@ -1,25 +1,31 @@
 "use client";
 
-import { LayoutDashboard, Users, Package, ShoppingCart, FileText, Settings, BarChart3, CreditCard } from "lucide-react";
+import { LayoutDashboard, Users, Package, ShoppingCart, FileText, Settings, BarChart3, CreditCard, PlusCircle, Megaphone, Tag, LayoutTemplate, Shield, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 const menuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard, category: null },
   { href: "/products", label: "Ürün Yönetimi", icon: Package, category: "E-Ticaret" },
+  { href: "/categories", label: "Kategoriler", icon: Tag, category: "E-Ticaret" },
+  { href: "/campaigns", label: "Kampanyalar", icon: Megaphone, category: "E-Ticaret" },
   { href: "/orders", label: "Siparişler", icon: ShoppingCart, category: "E-Ticaret" },
   { href: "/payments", label: "Ödemeler", icon: CreditCard, category: "E-Ticaret" },
+  { href: "/homepage", label: "Ana Sayfa Yönetimi", icon: LayoutTemplate, category: "İçerik" },
   { href: "/dealers", label: "Bayi Yönetimi", icon: Users, category: "B2B (ToptanBox)" },
+  { href: "/orders/new", label: "Sipariş Girişi", icon: PlusCircle, category: "B2B (ToptanBox)" },
   { href: "/catalogs", label: "Katalog Motoru", icon: FileText, category: "B2B (ToptanBox)" },
+  { href: "/users", label: "Kullanıcı Yönetimi", icon: Users, category: "Raporlar & Sistem" },
+  { href: "/roles", label: "Rol & Yetki Yönetimi", icon: Shield, category: "Raporlar & Sistem" },
   { href: "/reports", label: "Satış Analitikleri", icon: BarChart3, category: "Raporlar & Sistem" },
-  { href: "/settings", label: "Genel Ayarlar", icon: Settings, category: "Raporlar & Sistem" },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 bg-[var(--color-admin-sidebar)] text-[var(--color-admin-sidebar-text)] flex flex-col hidden md:flex shrink-0">
+    <aside className="w-64 bg-[var(--color-admin-sidebar)] text-[var(--color-admin-sidebar-text)] flex flex-col hidden md:flex shrink-0 border-r border-gray-800">
       <div className="h-16 flex items-center px-6 border-b border-gray-700 bg-gray-900">
         <span className="text-xl font-bold text-white tracking-wide">Admin Paneli</span>
       </div>
@@ -32,7 +38,7 @@ export function Sidebar() {
             
             return (
               <div key={item.href}>
-                {item.category && (idx === 0 || menuItems[idx - 1].category !== item.category) && (
+                {item.category && (idx === 0 || menuItems[idx - 1]?.category !== item.category) && (
                   <div className="pt-4 pb-2">
                     <p className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{item.category}</p>
                   </div>

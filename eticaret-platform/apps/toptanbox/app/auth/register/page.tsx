@@ -62,6 +62,12 @@ export default function RegisterPage() {
              </div>
 
              <form className="space-y-6">
+                {/* Honeypot field - Bots will fill this, humans won't see it */}
+                <div className="hidden" aria-hidden="true">
+                  <label htmlFor="website">Website</label>
+                  <input type="text" id="website" name="website" tabIndex={-1} autoComplete="off" />
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                    <Input label="Yetkili Ad Soyad" placeholder="Örn: Ahmet Yılmaz" />
                    <Input label="E-Posta Adresi" type="email" placeholder="ahmet@firma.com" />

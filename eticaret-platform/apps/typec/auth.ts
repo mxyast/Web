@@ -18,11 +18,23 @@ const nextAuth = NextAuth({
         }
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { email: (credentials.email as string).toLowerCase() },
         })
 
-        if (!user || !user.isActive) {
+        if (!user) {
           return null
+        }
+
+        if (!user.isActive) {
+          await prisma.userActionRequest.create({
+            data: {
+              userId: user.id,
+              actionType: "B2C_LOGIN_ATTEMPT",
+              description: `Pasif durumdaki kullanıcı B2C platformuna giriş yapmaya çalıştı.`,
+              status: "PENDING"
+            }
+          });
+          throw new Error("SUSPENDED");
         }
 
         // Only allow customers to login to TypeC (B2C) by default

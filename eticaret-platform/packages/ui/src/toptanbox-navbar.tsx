@@ -74,7 +74,7 @@ export const ToptanBoxNavbar = ({ user }: ToptanBoxNavbarProps) => {
   return (
     <>
       <header
-        className={`w-full  fixed top-0 left-0 right-0 z-[100] transition-[box-shadow] duration-300 ${isScrolled ? "shadow-md shadow-black/20" : ""
+        className={`sticky top-0 z-50 w-full transition-[box-shadow] duration-300 ${isScrolled ? "shadow-md shadow-black/20" : ""
           }`}
       >
         {/* Top Info Bar */}
@@ -104,7 +104,7 @@ export const ToptanBoxNavbar = ({ user }: ToptanBoxNavbarProps) => {
           className={`w-full bg-white border-b border-gray-200 transition-[height] duration-300 ${isScrolled ? "h-14" : "h-[64px]"
             }`}
         >
-          <div className="max-w-[1440px] mx-auto px-6 md:px-10 h-20 flex items-center justify-between gap-6">
+          <div className="max-w-[1440px] mx-auto px-6 md:px-10 h-full flex items-center justify-between gap-6">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 shrink-0 group">
               <div className="w-7 h-7 bg-orange-500 rounded-lg flex items-center justify-center">

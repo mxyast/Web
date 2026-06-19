@@ -1,5 +1,5 @@
 import { prisma } from "@eticaret/database";
-import { FileText, Plus, Download, MoreVertical, Trash2 } from "lucide-react";
+import { FileText, Plus, Download, MoreVertical, Trash2, Edit } from "lucide-react";
 import { Header } from "../../components/Header";
 import Link from "next/link";
 import { ToastContainer } from "../../components/Toast";
@@ -64,6 +64,9 @@ export default async function AdminCatalogsPage({
                         {new Date(cat.createdAt).toLocaleDateString("tr-TR")}
                       </span>
                       <div className="flex gap-2">
+                         <Link href={`/catalogs/${cat.id}`} className="p-2 hover:bg-blue-50 hover:text-blue-600 text-gray-400 rounded-lg transition-colors" title="Düzenle">
+                            <Edit className="w-4 h-4" />
+                         </Link>
                          <form action={async () => {
                            "use server";
                            await deleteCatalogTemplate(cat.id);

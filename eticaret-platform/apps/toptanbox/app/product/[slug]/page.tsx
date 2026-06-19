@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@eticaret/database";
+import { Navbar } from "@repo/ui/navbar";
+import { Footer } from "@repo/ui/footer";
 import { Button } from "@repo/ui/button";
 import { Input } from "@repo/ui/input";
 import { FileDown, Package, Box, Truck, CheckCircle2 } from "lucide-react";
@@ -29,10 +31,19 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const price = defaultVariant?.price;
 
   return (
-    <>
-      <main className="flex-1 py-12 pt-36 md:pt-40 bg-slate-50">
-        <div className="container mx-auto px-4">
+    <div className="flex flex-col min-h-screen">
+      <Navbar platform="TOPTANBOX" />
 
+      <main className="flex-1 py-12 bg-[var(--color-toptan-bg)]">
+        <div className="container mx-auto px-4">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-xs font-medium text-gray-500 mb-8">
+            <Link href="/" className="hover:text-black">Ana Sayfa</Link>
+            <span>/</span>
+            <Link href="/products" className="hover:text-black">{product.category.name}</Link>
+            <span>/</span>
+            <span className="text-black font-bold">{product.name}</span>
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left: Image & Specs (Col 7) */}
@@ -167,7 +178,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </div>
         </div>
       </main>
-    </>
+
+      <Footer platform="TOPTANBOX" />
+    </div>
   );
 }
 

@@ -1,22 +1,23 @@
 import { prisma, getB2BAvailableStock, searchProducts } from "@eticaret/database";
 import { ProductCard } from "@repo/ui/product-card";
-import { List, LayoutGrid, Filter } from "lucide-react";
+import { List, LayoutGrid, Filter, Search } from "lucide-react";
 import Link from "next/link";
 
 export default async function ProductsPage({ 
-  searchParams 
+  searchParams: searchParamsPromise 
 }: { 
-  searchParams: { 
+  searchParams: Promise<{ 
     view?: string; 
     q?: string;
     cat?: string;
     brand?: string;
     stock?: string;
-  } 
+  }>
 }) {
+  const searchParams = await searchParamsPromise;
   const isListView = searchParams.view === "list";
   
-  const productsRaw = await searchProducts({
+  const { products: productsRaw, didYouMean, total } = await searchProducts({
     query: searchParams.q,
     categoryId: searchParams.cat,
     brandId: searchParams.brand,
@@ -39,7 +40,8 @@ export default async function ProductsPage({
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
              <div>
                 <h1 className="text-3xl font-black text-slate-900 tracking-tight">Ürün Kataloğu</h1>
-                <p className="text-sm text-gray-500 font-medium">Toplam {products.length} ürün listeleniyor</p>
+                <p className="text-sm text-gray-500 font-medium">Toplam {total} ürün listeleniyor</p>
+                {searchParams.q && <p className="text-xs font-medium text-orange-600 mt-1">"{searchParams.q}" araması için sonuçlar</p>}
              </div>
 
              <div className="flex items-center gap-4 bg-white p-2 rounded-2xl border border-gray-200 shadow-sm">
@@ -169,6 +171,30 @@ export default async function ProductsPage({
                           }}
                         />
                       ))}
+                   </div>
+                )}
+                {products.length === 0 && (
+                   <div className="text-center py-24 bg-gray-50 rounded-[2.5rem] border border-dashed border-gray-200">
+                      <Search className="w-12 h-12 text-gray-300 mx-auto mb-6" />
+                      <h2 className="text-xl font-black mb-2">Sonuç Bulunamadı</h2>
+                      {didYouMean ? (
+                        <>
+                          <p className="text-sm text-gray-500 font-medium mb-2">"{searchParams.q}" için ürün bulunamadı.</p>
+                          <p className="text-sm text-gray-700">
+                            Bunu mu demek istediniz:{" "}
+                            <Link
+                              href={`/products?q=${encodeURIComponent(didYouMean)}`}
+                              className="font-black text-orange-600 underline underline-offset-4 hover:text-orange-700 transition-colors"
+                            >
+                              {didYouMean}
+                            </Link>
+                            ?
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-sm text-gray-500 font-medium">Seçilen filtrelere uygun ürün bulunmamaktadır.</p>
+                      )}
+                      <Link href="/products" className="inline-block mt-6 text-xs font-black text-orange-600 hover:underline">Tüm Kataloğu Gör</Link>
                    </div>
                 )}
              </div>

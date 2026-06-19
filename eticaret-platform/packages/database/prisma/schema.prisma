@@ -23,7 +23,7 @@ model User {
   passwordHash  String
   name          String
   phone         String?
-  role          Role      @default(CUSTOMER)
+  role          String    @default("CUSTOMER")
   isVerified    Boolean   @default(false)
   isActive      Boolean   @default(true)
   createdAt     DateTime  @default(now())
@@ -35,6 +35,20 @@ model User {
   reviews       Review[]
   wishlist      Wishlist[]
   cart          Cart?
+  actionRequests UserActionRequest[]
+}
+
+// -----------------------------------------------------------------------------
+// RATE LIMITING & SECURITY
+// -----------------------------------------------------------------------------
+
+model RateLimit {
+  id        String   @id @default(cuid())
+  ip        String
+  action    String
+  timestamp DateTime @default(now())
+
+  @@index([ip, action, timestamp])
 }
 
 enum PriceList {
@@ -106,6 +120,7 @@ model Category {
   children    Category[] @relation("CategoryHierarchy")
   products    Product[]
   catalogTemplates CatalogTemplate[]
+  homepageSections HomepageSection[]
 }
 
 model Brand {
@@ -136,6 +151,7 @@ model Product {
   category    Category   @relation(fields: [categoryId], references: [id])
   variants    Variant[]
   reviews     Review[]
+  campaigns   Campaign[]
 }
 
 model Variant {
@@ -170,6 +186,23 @@ model Attribute {
 
   variant     Variant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
 }
+
+model Campaign {
+  id          String     @id @default(cuid())
+  title       String
+  slug        String     @unique
+  description String?    @db.Text
+  imageUrl    String?
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean    @default(true)
+  platform    Platform   @default(TYPEC)
+  
+  products    Product[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
 
 // -----------------------------------------------------------------------------
 // PRICING & INVENTORY
@@ -386,3 +419,66 @@ model CatalogTemplate {
   brand       Brand?    @relation(fields: [brandId], references: [id])
   category    Category? @relation(fields: [categoryId], references: [id])
 }
+
+// -----------------------------------------------------------------------------
+// HOMEPAGE CONTENT MANAGEMENT
+// -----------------------------------------------------------------------------
+
+model HomepageSection {
+  id          String    @id @default(cuid())
+  key         String    @unique  // "chargers", "audio", "smart"
+  title       String
+  imageUrl    String?
+  defaultImageUrl String? // fallback when imageUrl is null
+  categoryId  String?
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  isDraft     Boolean   @default(false)
+
+  category    Category? @relation(fields: [categoryId], references: [id])
+}
+
+model HomepageBanner {
+  id              String   @id @default(cuid())
+  badge           String   @default("BASEUS EXCLUSIVE")
+  title           String   @default("\u015eARJIN GELECEˆ")
+  titleHighlight  String   @default("GAn5 PRO.")
+  description     String   @default("Baseus'un en yeni nesil GaN teknolojisi ile cihazlarınızı daha hızlı ve güvenli şarj edin.")
+  buttonText      String   @default("LANSMAN ÜRÜNLERİ")
+  buttonUrl       String   @default("/products")
+  imageUrl        String?
+  isActive        Boolean  @default(true)
+  isDraft         Boolean  @default(false)
+}
+
+enum ActionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model UserActionRequest {
+  id          String       @id @default(cuid())
+  userId      String
+  actionType  String       // e.g. "LOGIN_ATTEMPT", "ORDER_ATTEMPT", "PAGE_ACCESS"
+  description String       @db.Text
+  status      ActionStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SystemSetting {
+  key   String @id
+  value String @db.Text
+}
+
+model RoleDefinition {
+  name        String   @id // e.g. "ADMIN", "SUPPORT", "DEALER"
+  description String?
+  permissions String[] // e.g. ["ACCESS_ADMIN", "MANAGE_PRODUCTS", "MANAGE_USERS", "VIEW_REPORTS"]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+

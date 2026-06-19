@@ -1,4 +1,5 @@
-import { PrismaClient, Role, Platform, PriceList } from "@prisma/client";
+// @ts-nocheck
+import { PrismaClient, Platform, PriceList } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -16,7 +17,7 @@ async function main() {
       email: "admin@eticaret.com",
       name: "Admin User",
       passwordHash,
-      role: Role.ADMIN,
+      role: "ADMIN",
       isVerified: true,
     },
   });
@@ -28,7 +29,7 @@ async function main() {
       email: "dealer@eticaret.com",
       name: "Toptan Bayi",
       passwordHash,
-      role: Role.DEALER,
+      role: "DEALER",
       isVerified: true,
       b2bProfile: {
         create: {
@@ -50,7 +51,7 @@ async function main() {
       email: "customer@eticaret.com",
       name: "Ahmet Müşteri",
       passwordHash,
-      role: Role.CUSTOMER,
+      role: "CUSTOMER",
       isVerified: true,
     },
   });
@@ -58,10 +59,10 @@ async function main() {
   console.log("Users created.");
 
   // 2. Create Brands
-  const mioji = await prisma.brand.upsert({
-    where: { slug: "mioji" },
+  const typec = await prisma.brand.upsert({
+    where: { slug: "typec" },
     update: {},
-    create: { name: "Mioji", slug: "mioji" },
+    create: { name: "typec", slug: "typec" },
   });
 
   const baseus = await prisma.brand.upsert({
@@ -89,39 +90,89 @@ async function main() {
     create: { name: "Kablolar", slug: "kablolar" },
   });
 
+  const audio = await prisma.category.upsert({
+    where: { slug: "ses-sistemleri" },
+    update: {},
+    create: { name: "Ses Sistemleri", slug: "ses-sistemleri" },
+  });
+
+  const smart = await prisma.category.upsert({
+    where: { slug: "akilli-yasam" },
+    update: {},
+    create: { name: "Akıllı Yaşam", slug: "akilli-yasam" },
+  });
+
   // 4. Create Products
   const p1 = await prisma.product.upsert({
-    where: { slug: "mioji-powercore-20k" },
+    where: { slug: "typec-powercore-20k" },
     update: {},
     create: {
-      name: "Mioji PowerCore 20K SuperCharge",
-      slug: "mioji-powercore-20k",
-      description: "20.000mAh kapasiteli, 65W GaN destekli ultra hızlı powerbank.",
-      brandId: mioji.id,
+      name: "typec PowerCore 20K SuperCharge",
+      slug: "typec-powercore-20k",
+      description: "20.000mAh yüksek kapasiteli, 65W GaN destekli ultra hızlı taşınabilir şarj cihazı. Aynı anda birden fazla cihazı yüksek hızda şarj edebilir, seyahatlerinizde vazgeçilmez bir yol arkadaşıdır.",
+      brandId: typec.id,
       categoryId: chargers.id,
       isB2C: true,
       isB2B: true,
       variants: {
-        create: {
-          sku: "MJ-PWR-20K-SLV",
-          color: "Gümüş",
-          images: [],
-          price: {
-            create: {
-              retailPrice: 2499.0,
-              listA: 950.0,
-              listB: 920.0,
-              listC: 890.0,
-              listD: 860.0,
+        create: [
+          {
+            sku: "MJ-PWR-20K-SLV",
+            color: "Gümüş",
+            images: [],
+            price: {
+              create: {
+                retailPrice: 2499.0,
+                listA: 950.0,
+                listB: 920.0,
+                listC: 890.0,
+                listD: 860.0,
+              },
             },
-          },
-          inventory: {
-            create: {
-              totalStock: 200,
-              b2cReserveRatio: 30,
+            inventory: {
+              create: {
+                totalStock: 200,
+                b2cReserveRatio: 30,
+              },
             },
+            attributes: {
+              create: [
+                { key: "Cihaz", value: "typec PowerCore 20K Powerbank" },
+                { key: "Kablo", value: "USB-C to USB-C 100W Kablo (1m)" },
+                { key: "Taşıma Çantası", value: "Kadife Taşıma Kılıfı" },
+                { key: "Belgeler", value: "Kullanma Kılavuzu ve Garanti Belgesi" }
+              ]
+            }
           },
-        },
+          {
+            sku: "MJ-PWR-20K-BLK",
+            color: "Siyah",
+            images: [],
+            price: {
+              create: {
+                retailPrice: 2499.0,
+                listA: 950.0,
+                listB: 920.0,
+                listC: 890.0,
+                listD: 860.0,
+              },
+            },
+            inventory: {
+              create: {
+                totalStock: 150,
+                b2cReserveRatio: 30,
+              },
+            },
+            attributes: {
+              create: [
+                { key: "Cihaz", value: "typec PowerCore 20K Powerbank" },
+                { key: "Kablo", value: "USB-C to USB-C 100W Kablo (1m)" },
+                { key: "Taşıma Çantası", value: "Kadife Taşıma Kılıfı" },
+                { key: "Belgeler", value: "Kullanma Kılavuzu ve Garanti Belgesi" }
+              ]
+            }
+          }
+        ]
       },
     },
   });
@@ -132,66 +183,138 @@ async function main() {
     create: {
       name: "Baseus GaN5 Pro 100W Hızlı Şarj Cihazı",
       slug: "baseus-gan5-pro-100w",
-      description: "Yüksek performanslı GaN teknolojili şarj cihazı.",
+      description: "Yeni nesil GaN5 Pro teknolojisi ile daha küçük boyutlarda daha yüksek güç çıkışı. 100W ultra hızlı şarj desteği ile dizüstü bilgisayarlarınızı ve akıllı telefonlarınızı aynı anda güvenle şarj edin.",
       brandId: baseus.id,
       categoryId: chargers.id,
       isB2C: true,
       isB2B: true,
       variants: {
-        create: {
-          sku: "BS-GAN5-100W-BLK",
-          color: "Siyah",
-          images: [],
-          price: {
-            create: {
-              retailPrice: 1249.0,
-              listA: 450.0,
-              listB: 420.0,
-              listC: 390.0,
-              listD: 360.0,
+        create: [
+          {
+            sku: "BS-GAN5-100W-BLK",
+            color: "Siyah",
+            images: [],
+            price: {
+              create: {
+                retailPrice: 1249.0,
+                listA: 450.0,
+                listB: 420.0,
+                listC: 390.0,
+                listD: 360.0,
+              },
             },
-          },
-          inventory: {
-            create: {
-              totalStock: 500,
-              b2cReserveRatio: 20,
+            inventory: {
+              create: {
+                totalStock: 500,
+                b2cReserveRatio: 20,
+              },
             },
+            attributes: {
+              create: [
+                { key: "Şarj Başlığı", value: "Baseus GaN5 Pro 100W Şarj Aleti" },
+                { key: "Kablo", value: "Baseus Type-C'den Type-C'ye 100W Hızlı Şarj Kablosu (1m)" },
+                { key: "Kılavuz", value: "Kullanım Kılavuzu" },
+                { key: "Garanti Belgesi", value: "Distribütör Onaylı 2 Yıl Garanti Kartı" }
+              ]
+            }
           },
-        },
+          {
+            sku: "BS-GAN5-100W-WHT",
+            color: "Beyaz",
+            images: [],
+            price: {
+              create: {
+                retailPrice: 1249.0,
+                listA: 450.0,
+                listB: 420.0,
+                listC: 390.0,
+                listD: 360.0,
+              },
+            },
+            inventory: {
+              create: {
+                totalStock: 300,
+                b2cReserveRatio: 20,
+              },
+            },
+            attributes: {
+              create: [
+                { key: "Şarj Başlığı", value: "Baseus GaN5 Pro 100W Şarj Aleti" },
+                { key: "Kablo", value: "Baseus Type-C'den Type-C'ye 100W Hızlı Şarj Kablosu (1m)" },
+                { key: "Kılavuz", value: "Kullanım Kılavuzu" },
+                { key: "Garanti Belgesi", value: "Distribütör Onaylı 2 Yıl Garanti Kartı" }
+              ]
+            }
+          }
+        ]
       },
     },
   });
 
   const p3 = await prisma.product.upsert({
-    where: { slug: "mioji-ultra-link-c" },
+    where: { slug: "typec-ultra-link-c" },
     update: {},
     create: {
-      name: "Mioji UltraLink USB-C to USB-C Kablo",
-      slug: "mioji-ultra-link-c",
-      description: "240W PD desteği ve 40Gbps veri transfer hızı.",
-      brandId: mioji.id,
+      name: "typec UltraLink USB-C to USB-C Kablo",
+      slug: "typec-ultra-link-c",
+      description: "240W Power Delivery (PD) desteği ve 40Gbps veri transfer hızı. Örgülü naylon yapısı ile bükülmelere ve kırılmalara karşı ultra dayanıklı, uzun ömürlü yüksek hızlı kablo.",
+      brandId: typec.id,
       categoryId: cables.id,
       isB2C: true,
       isB2B: true,
       variants: {
-        create: {
-          sku: "MJ-CBL-240W-2M",
-          sizeLength: "2m",
-          color: "Titanyum",
-          images: [],
-          price: {
-            create: {
-              retailPrice: 499.0,
-              listA: 150.0,
-              listB: 140.0,
-              listC: 130.0,
-              listD: 120.0,
+        create: [
+          {
+            sku: "MJ-CBL-240W-2M-TIT",
+            sizeLength: "2m",
+            color: "Titanyum",
+            images: [],
+            price: {
+              create: {
+                retailPrice: 499.0,
+                listA: 150.0,
+                listB: 140.0,
+                listC: 130.0,
+                listD: 120.0,
+              },
             },
+            inventory: {
+              create: { totalStock: 1000, b2cReserveRatio: 50 },
+            },
+            attributes: {
+              create: [
+                { key: "Kablo", value: "typec UltraLink 240W USB-C Kablosu (2m)" },
+                { key: "Aksesuar", value: "Deri Kablo Düzenleyici Cırt Bant" },
+                { key: "Belge", value: "Garanti ve Ürün Kataloğu" }
+              ]
+            }
           },
-          inventory: {
-            create: { totalStock: 1000, b2cReserveRatio: 50 },
-          },
-        },
+          {
+            sku: "MJ-CBL-240W-2M-GRY",
+            sizeLength: "2m",
+            color: "Gri",
+            images: [],
+            price: {
+              create: {
+                retailPrice: 499.0,
+                listA: 150.0,
+                listB: 140.0,
+                listC: 130.0,
+                listD: 120.0,
+              },
+            },
+            inventory: {
+              create: { totalStock: 500, b2cReserveRatio: 50 },
+            },
+            attributes: {
+              create: [
+                { key: "Kablo", value: "typec UltraLink 240W USB-C Kablosu (2m)" },
+                { key: "Aksesuar", value: "Deri Kablo Düzenleyici Cırt Bant" },
+                { key: "Belge", value: "Garanti ve Ürün Kataloğu" }
+              ]
+            }
+          }
+        ]
       },
     },
   });
@@ -234,6 +357,68 @@ async function main() {
 
   console.log("Products and Variants created.");
 
+  // Create additional mock users for reviews
+  const u1 = await prisma.user.upsert({
+    where: { email: "zeynep@eticaret.com" },
+    update: {},
+    create: { email: "zeynep@eticaret.com", name: "Zeynep Yılmaz", passwordHash, role: "CUSTOMER", isVerified: true },
+  });
+
+  const u2 = await prisma.user.upsert({
+    where: { email: "mehmet@eticaret.com" },
+    update: {},
+    create: { email: "mehmet@eticaret.com", name: "Mehmet Demir", passwordHash, role: "CUSTOMER", isVerified: true },
+  });
+
+  const u3 = await prisma.user.upsert({
+    where: { email: "can@eticaret.com" },
+    update: {},
+    create: { email: "can@eticaret.com", name: "Can Kaya", passwordHash, role: "CUSTOMER", isVerified: true },
+  });
+
+  // Create mock reviews
+  console.log("Seeding Reviews...");
+  await prisma.review.deleteMany(); // Clear existing reviews first
+  await prisma.review.create({
+    data: {
+      productId: p2.id,
+      userId: u1.id,
+      rating: 5,
+      comment: "Baseus kalitesi kendini belli ediyor. 100W çıkış gücü sayesinde MacBook ve iPhone'umu aynı anda en yüksek hızda şarj edebiliyorum. Isınma problemi de hiç yok. Kesinlikle tavsiye ederim.",
+      isApproved: true,
+    }
+  });
+
+  await prisma.review.create({
+    data: {
+      productId: p2.id,
+      userId: u2.id,
+      rating: 4,
+      comment: "Şarj aleti biraz ağır ama performansına değer. Kutu içeriği çok zengin, 100W Type-C kablosunun da hediye olarak çıkması büyük bir artı. Lojistik de hızlıydı, sipariş ertesi gün teslim edildi.",
+      isApproved: true,
+    }
+  });
+
+  await prisma.review.create({
+    data: {
+      productId: p1.id,
+      userId: u3.id,
+      rating: 5,
+      comment: "Kapasitesi ve 65W GaN desteği inanılmaz. Hem telefonumu hem de laptopımı şarj edebiliyorum. typec markasının premium hissi her detayda var.",
+      isApproved: true,
+    }
+  });
+
+  await prisma.review.create({
+    data: {
+      productId: p3.id,
+      userId: customer.id,
+      rating: 5,
+      comment: "Kablo kalitesi şahane, örgülü naylon yapısı çok dayanıklı duruyor. 240W desteği geleceğe yatırım. typec kalitesi.",
+      isApproved: true,
+    }
+  });
+
   // 5. Cart Discount Tiers
   await prisma.cartDiscountTier.createMany({
     data: [
@@ -243,6 +428,63 @@ async function main() {
     ],
     skipDuplicates: true,
   });
+
+  // 6. Create Homepage Sections
+  await prisma.homepageSection.upsert({
+    where: { key: "chargers" },
+    update: {},
+    create: {
+      key: "chargers",
+      title: "ŞARJ ÜNİTELERİ",
+      categoryId: chargers.id,
+      sortOrder: 1,
+      isActive: true,
+      isDraft: false,
+    },
+  });
+
+  await prisma.homepageSection.upsert({
+    where: { key: "audio" },
+    update: {},
+    create: {
+      key: "audio",
+      title: "SES SİSTEMLERİ",
+      categoryId: audio.id,
+      sortOrder: 2,
+      isActive: true,
+      isDraft: false,
+    },
+  });
+
+  await prisma.homepageSection.upsert({
+    where: { key: "smart" },
+    update: {},
+    create: {
+      key: "smart",
+      title: "AKILLI YAŞAM",
+      categoryId: smart.id,
+      sortOrder: 3,
+      isActive: true,
+      isDraft: false,
+    },
+  });
+
+  // 7. Create Homepage Banner
+  const bannerExists = await prisma.homepageBanner.findFirst();
+  if (!bannerExists) {
+    await prisma.homepageBanner.create({
+      data: {
+        badge: "BASEUS EXCLUSIVE",
+        title: "ŞARJIN GELECEĞİ",
+        titleHighlight: "GAn5 PRO.",
+        description: "Baseus'un en yeni nesil GaN teknolojisi ile cihazlarınızı %300 daha hızlı ve güvenli şarj edin.",
+        buttonText: "LANSMAN ÜRÜNLERİ",
+        buttonUrl: "/products?brand=baseus",
+        isActive: true,
+        isDraft: false,
+      },
+    });
+  }
 
   console.log("Seeding completed successfully.");
 }

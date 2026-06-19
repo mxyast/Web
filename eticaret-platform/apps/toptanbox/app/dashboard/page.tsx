@@ -86,7 +86,7 @@ export default async function DealerDashboard() {
                           <h2 className="text-3xl font-black mb-2 leading-tight">Baseus Ürünlerinde <br/> Ekstra %5 İskonto!</h2>
                           <p className="text-white/70 text-sm font-medium mb-8">Bu hafta yapacağınız 25.000 TL ve üzeri alımlarda geçerlidir.</p>
                           <Link href="/products?brand=baseus">
-                             <Button className="bg-white text-orange-600 hover:bg-orange-50 px-8 py-3 rounded-2xl font-black text-sm">Fırsatı Yakala</Button>
+                             <button className="bg-white text-orange-600 hover:bg-orange-50 px-8 py-3 rounded-2xl font-black text-sm">Fırsatı Yakala</button>
                           </Link>
                        </div>
                        <Zap className="w-32 h-32 text-white/20" />
@@ -132,14 +132,14 @@ export default async function DealerDashboard() {
                     <h3 className="text-lg font-black mb-8 tracking-tight">Hızlı Bağlantılar</h3>
                     <div className="grid grid-cols-2 gap-4">
                        {[
-                         { name: "Yeni Sipariş", icon: <Package />, href: "/products" },
-                         { name: "Hesap Hareketleri", icon: <TrendingUp />, href: "/finance" },
-                         { name: "Fiyat Listeleri", icon: <FileText />, href: "/catalogs" },
-                         { name: "Destek Talebi", icon: <Clock />, href: "/support" }
+                         { name: "Yeni Sipariş", icon: Package, href: "/products" },
+                         { name: "Hesap Hareketleri", icon: TrendingUp, href: "/finance" },
+                         { name: "Fiyat Listeleri", icon: FileText, href: "/catalogs" },
+                         { name: "Destek Talebi", icon: Clock, href: "/support" }
                        ].map((link, i) => (
                          <Link key={i} href={link.href} className="p-4 rounded-3xl bg-gray-50 hover:bg-slate-900 hover:text-white transition-all group text-center flex flex-col items-center gap-3">
                             <div className="w-10 h-10 flex items-center justify-center text-slate-400 group-hover:text-white transition-colors">
-                               {React.cloneElement(link.icon as React.ReactElement, { className: "w-6 h-6" })}
+                               <link.icon className="w-6 h-6" />
                             </div>
                             <span className="text-[10px] font-black uppercase tracking-tight">{link.name}</span>
                          </Link>
