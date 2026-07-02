@@ -3,7 +3,7 @@
 import { prisma } from "@eticaret/database";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { writeFile } from "fs/promises";
+import { writeFile, unlink } from "fs/promises";
 import path from "path";
 import { checkAdminAccess } from "../../auth";
 
@@ -201,6 +201,27 @@ export async function updateProduct(productId: string, variantId: string, formDa
     // Parse existing images that were kept
     const keptImagesJson = formData.get("keptImages") as string;
     const keptImages = keptImagesJson ? JSON.parse(keptImagesJson) : [];
+
+    // Find and delete files that are no longer kept
+    const oldVariants = await prisma.variant.findMany({
+      where: { productId },
+      select: { images: true }
+    });
+    const oldImages = Array.from(new Set(oldVariants.flatMap(v => v.images)));
+    const deletedImages = oldImages.filter(img => 
+      img.startsWith('/uploads/') && 
+      !img.includes('..') && 
+      !keptImages.includes(img)
+    );
+
+    for (const imgPath of deletedImages) {
+      try {
+        const filepath = path.join(process.cwd(), 'public', imgPath);
+        await unlink(filepath);
+      } catch (err) {
+        console.error(`Failed to delete orphaned image: ${imgPath}`, err);
+      }
+    }
 
     const processedImages = await processImages(formData, keptImages, name);
 
