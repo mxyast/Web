@@ -216,7 +216,7 @@ export function ProductForm({ brands, categories, product = null }: { brands: an
               )}
               {keptImages.map((imgUrl, i) => {
                 const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL || "";
-                const displayUrl = imgUrl.startsWith('/uploads/') ? `${adminUrl}${imgUrl}` : imgUrl;
+                const displayUrl = imgUrl.startsWith('/api/uploads/') || imgUrl.startsWith('/uploads/') ? `${adminUrl}${imgUrl.startsWith('/uploads/') ? imgUrl.replace('/uploads/', '/api/uploads/') : imgUrl}` : imgUrl;
                 return (
                   <div key={`kept-${i}`} className="flex items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
                     <img src={displayUrl} className="w-10 h-10 object-cover rounded-lg shrink-0" alt="Ürün" />

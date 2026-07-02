@@ -78,8 +78,8 @@ export default function WishlistPage() {
                     <Link href={`/product/${item.slug}`}>
                       <img
                         src={
-                          item.image?.startsWith("/uploads/")
-                            ? `${process.env.NEXT_PUBLIC_ADMIN_URL || ''}${item.image}`
+                          item.image?.startsWith("/api/uploads/") || item.image?.startsWith("/uploads/")
+                            ? `${process.env.NEXT_PUBLIC_ADMIN_URL || ''}${item.image.startsWith('/uploads/') ? item.image.replace('/uploads/', '/api/uploads/') : item.image}`
                             : (item.image || "https://images.unsplash.com/photo-1616440347437-b1c73416efc2?q=80&w=1000&auto=format&fit=crop")
                         }
                         alt={item.name}

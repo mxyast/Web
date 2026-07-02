@@ -26,7 +26,7 @@ async function saveUploadedFile(file: File): Promise<string> {
   await mkdir(uploadDir, { recursive: true });
   const filepath = path.join(uploadDir, filename);
   await writeFile(filepath, buffer);
-  return `/uploads/${filename}`;
+  return `/api/uploads/${filename}`;
 }
 
 export async function updateHomepageSection(sectionId: string, formData: FormData) {

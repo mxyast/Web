@@ -10,7 +10,7 @@ interface ProductGalleryProps {
 export const ProductGallery = ({ images, productName }: ProductGalleryProps) => {
   const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL || "";
   const displayImages = images.length > 0
-    ? images.map(img => img.startsWith('/uploads/') ? `${adminUrl}${img}` : img)
+    ? images.map(img => img.startsWith('/api/uploads/') || img.startsWith('/uploads/') ? `${adminUrl}${img.startsWith('/uploads/') ? img.replace('/uploads/', '/api/uploads/') : img}` : img)
     : [
       "https://images.unsplash.com/photo-1546868831-71cd00a21960?q=80&w=1964&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1606229365485-93a3b8ee0385?q=80&w=1964&auto=format&fit=crop",

@@ -308,7 +308,7 @@ export const TypeCNavbar = ({ user, cartCount = 0, wishlistCount = 0, categories
                                 <div className="w-10 h-10 rounded-xl bg-gray-100 overflow-hidden shrink-0">
                                   {s.variants[0]?.images[0] ? (
                                     <img
-                                      src={s.variants[0].images[0].startsWith('/uploads/') ? `${process.env.NEXT_PUBLIC_ADMIN_URL || ''}${s.variants[0].images[0]}` : s.variants[0].images[0]}
+                                      src={s.variants[0].images[0].startsWith('/api/uploads/') || s.variants[0].images[0].startsWith('/uploads/') ? `${process.env.NEXT_PUBLIC_ADMIN_URL || ''}${s.variants[0].images[0].startsWith('/uploads/') ? s.variants[0].images[0].replace('/uploads/', '/api/uploads/') : s.variants[0].images[0]}` : s.variants[0].images[0]}
                                       alt={s.name}
                                       className="w-full h-full object-cover"
                                     />

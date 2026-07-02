@@ -33,7 +33,7 @@ async function processImages(formData: FormData, existingImages: string[], produ
       const filepath = path.join(process.cwd(), 'public', 'uploads', filename);
       
       await writeFile(filepath, buffer);
-      processedImages.push(`/uploads/${filename}`);
+      processedImages.push(`/api/uploads/${filename}`);
     }
   }
 
