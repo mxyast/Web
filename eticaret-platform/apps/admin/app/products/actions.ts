@@ -13,8 +13,20 @@ async function processImages(formData: FormData, existingImages: string[], produ
   
   const processedImages: string[] = [...existingImages, ...imageUrls.filter(url => url.trim() !== '')];
 
+  const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.gif'];
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
   for (const file of imageFiles) {
     if (file.size > 0) {
+      if (file.size > MAX_FILE_SIZE) {
+        throw new Error(`Dosya boyutu çok büyük. Maksimum 5MB yüklenebilir: ${file.name}`);
+      }
+
+      const fileExt = path.extname(file.name).toLowerCase();
+      if (!ALLOWED_EXTENSIONS.includes(fileExt)) {
+        throw new Error(`Geçersiz dosya tipi. Yalnızca görsel yükleyebilirsiniz: ${file.name}`);
+      }
+
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
       const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;

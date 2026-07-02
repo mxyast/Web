@@ -56,8 +56,6 @@ async function main() {
     },
   });
 
-  console.log("Users created.");
-
   // 2. Create Brands
   const typec = await prisma.brand.upsert({
     where: { slug: "typec" },

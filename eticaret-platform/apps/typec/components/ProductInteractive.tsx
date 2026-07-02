@@ -74,8 +74,9 @@ export function ProductInteractive({ productId, productName, variants, brandName
 
   const isWishlisted = isInWishlist(selectedVariant?.id ?? "");
 
+  const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL || "";
   const displayImages = (selectedVariant?.images?.length ?? 0) > 0 
-    ? selectedVariant!.images.map((img: string) => img.startsWith('/uploads/') ? `http://localhost:3000${img}` : img)
+    ? selectedVariant!.images.map((img: string) => img.startsWith('/uploads/') ? `${adminUrl}${img}` : img)
     : ["https://images.unsplash.com/photo-1546868831-71cd00a21960?q=80&w=1964&auto=format&fit=crop"];
 
   // Countdown timer logic
