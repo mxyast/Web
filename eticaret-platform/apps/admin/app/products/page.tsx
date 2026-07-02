@@ -110,7 +110,7 @@ export default async function ProductsPage({
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
                               {variant?.images?.[0] ? (
-                                <img src={variant.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                                <img src={variant.images[0].startsWith('/uploads/') ? `${process.env.NEXT_PUBLIC_ADMIN_URL || ''}${variant.images[0]}` : variant.images[0]} alt={product.name} className="w-full h-full object-cover" />
                               ) : (
                                 <Package className="w-5 h-5 text-gray-400" />
                               )}
@@ -185,7 +185,7 @@ export default async function ProductsPage({
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
                             {firstVariant?.images && firstVariant.images.length > 0 ? (
-                              <img src={firstVariant.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                              <img src={firstVariant.images[0]?.startsWith('/uploads/') ? `${process.env.NEXT_PUBLIC_ADMIN_URL || ''}${firstVariant.images[0]}` : firstVariant.images[0]} alt={product.name} className="w-full h-full object-cover" />
                             ) : (
                               <Package className="w-6 h-6 text-gray-400" />
                             )}

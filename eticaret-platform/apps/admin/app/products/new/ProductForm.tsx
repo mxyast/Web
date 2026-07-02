@@ -214,15 +214,19 @@ export function ProductForm({ brands, categories, product = null }: { brands: an
                   <p className="text-[10px] text-gray-400 font-medium">Link olarak ekleyebilir veya bilgisayarınızdan yükleyebilirsiniz.</p>
                 </div>
               )}
-              {keptImages.map((imgUrl, i) => (
-                <div key={`kept-${i}`} className="flex items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                  <img src={imgUrl} className="w-10 h-10 object-cover rounded-lg shrink-0" alt="Ürün" />
-                  <span className="flex-1 text-sm font-medium text-slate-700 truncate">{imgUrl.split('/').pop()}</span>
-                  <button type="button" onClick={() => handleRemoveKeptImage(imgUrl)} className="p-1.5 hover:bg-red-50 text-red-500 rounded-lg transition-colors">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
+              {keptImages.map((imgUrl, i) => {
+                const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL || "";
+                const displayUrl = imgUrl.startsWith('/uploads/') ? `${adminUrl}${imgUrl}` : imgUrl;
+                return (
+                  <div key={`kept-${i}`} className="flex items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <img src={displayUrl} className="w-10 h-10 object-cover rounded-lg shrink-0" alt="Ürün" />
+                    <span className="flex-1 text-sm font-medium text-slate-700 truncate">{imgUrl.split('/').pop()}</span>
+                    <button type="button" onClick={() => handleRemoveKeptImage(imgUrl)} className="p-1.5 hover:bg-red-50 text-red-500 rounded-lg transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                );
+              })}
               {newImages.map(img => (
                 <div key={img.id} className={`flex flex-col gap-2 p-3 rounded-xl border ${img.error ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-100'}`}>
                   <div className="flex items-center gap-3">
