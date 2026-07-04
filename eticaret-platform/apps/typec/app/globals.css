@@ -102,3 +102,12 @@
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
+
+/* Hide scrollbars globally for cleaner UI sliders */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

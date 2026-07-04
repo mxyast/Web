@@ -3,6 +3,7 @@
 import { prisma } from "@eticaret/database";
 import { revalidatePath } from "next/cache";
 import { checkAdminAccess } from "../../auth";
+import { logAdminAction } from "../utils/audit";
 
 export async function getAllowedRoles(): Promise<string[]> {
   await checkAdminAccess();
@@ -23,6 +24,13 @@ export async function updateAllowedRoles(roles: string[]) {
     update: { value: roles.join(",") },
     create: { key: "admin_allowed_roles", value: roles.join(",") }
   });
+
+  await logAdminAction(
+    "UPDATE_SETTINGS",
+    "SystemSetting",
+    "admin_allowed_roles",
+    `Yönetici giriş yetkileri güncellendi. İzin verilen roller: ${roles.join(", ")}`
+  );
 
   revalidatePath("/settings");
 }

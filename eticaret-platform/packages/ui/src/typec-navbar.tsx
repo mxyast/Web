@@ -24,7 +24,12 @@ interface TypeCNavbarProps {
   } | null;
   cartCount?: number;
   wishlistCount?: number;
-  categories?: { id: string; name: string; slug: string; }[];
+  categories?: {
+    id: string;
+    name: string;
+    slug: string;
+    children?: { id: string; name: string; slug: string; }[];
+  }[];
 }
 
 type NavLink = {
@@ -216,14 +221,29 @@ export const TypeCNavbar = ({ user, cartCount = 0, wishlistCount = 0, categories
                           >
                             {categories && categories.length > 0 ? (
                               categories.map(cat => (
-                                <Link
-                                  key={cat.id}
-                                  href={`/products?cat=${cat.id}`}
-                                  onClick={() => setIsCategoriesOpen(false)}
-                                  className="block px-6 py-2.5 text-sm font-bold text-[#1A1A1A] hover:bg-gray-50 hover:text-[#E31E24] transition-colors"
-                                >
-                                  {cat.name}
-                                </Link>
+                                <div key={cat.id} className="px-6 py-2 border-b border-gray-50 last:border-0">
+                                  <Link
+                                    href={`/products?cat=${cat.id}`}
+                                    onClick={() => setIsCategoriesOpen(false)}
+                                    className="block text-sm font-black text-[#1A1A1A] hover:text-[#E31E24] transition-colors"
+                                  >
+                                    {cat.name}
+                                  </Link>
+                                  {cat.children && cat.children.length > 0 && (
+                                    <div className="mt-1 ml-3 space-y-1">
+                                      {cat.children.map(child => (
+                                        <Link
+                                          key={child.id}
+                                          href={`/products?cat=${child.id}`}
+                                          onClick={() => setIsCategoriesOpen(false)}
+                                          className="block text-xs font-bold text-gray-500 hover:text-[#E31E24] transition-colors"
+                                        >
+                                          {child.name}
+                                        </Link>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
                               ))
                             ) : (
                               <div className="px-6 py-4 text-xs font-medium text-gray-400 text-center">
@@ -515,14 +535,29 @@ export const TypeCNavbar = ({ user, cartCount = 0, wishlistCount = 0, categories
                             >
                               {categories && categories.length > 0 ? (
                                 categories.map(cat => (
-                                  <Link
-                                    key={cat.id}
-                                    href={`/products?cat=${cat.id}`}
-                                    onClick={() => { setIsCategoriesOpen(false); setIsMenuOpen(false); }}
-                                    className="block px-4 py-2 text-sm font-bold text-gray-500 hover:text-[#E31E24] hover:bg-gray-50 rounded-xl transition-colors"
-                                  >
-                                    {cat.name}
-                                  </Link>
+                                  <div key={cat.id} className="py-2 border-b border-gray-100 last:border-0 pl-2">
+                                    <Link
+                                      href={`/products?cat=${cat.id}`}
+                                      onClick={() => { setIsCategoriesOpen(false); setIsMenuOpen(false); }}
+                                      className="block text-sm font-bold text-gray-500 hover:text-[#E31E24] transition-colors"
+                                    >
+                                      {cat.name}
+                                    </Link>
+                                    {cat.children && cat.children.length > 0 && (
+                                      <div className="mt-1 ml-4 space-y-1">
+                                        {cat.children.slice(0, 2).map(child => (
+                                          <Link
+                                            key={child.id}
+                                            href={`/products?cat=${child.id}`}
+                                            onClick={() => { setIsCategoriesOpen(false); setIsMenuOpen(false); }}
+                                            className="block text-xs font-semibold text-gray-400 hover:text-[#E31E24] transition-colors"
+                                          >
+                                            {child.name}
+                                          </Link>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
                                 ))
                               ) : (
                                 <div className="px-4 py-2 text-xs font-medium text-gray-400">

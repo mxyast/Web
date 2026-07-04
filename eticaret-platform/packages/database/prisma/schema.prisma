@@ -36,6 +36,7 @@ model User {
   wishlist      Wishlist[]
   cart          Cart?
   actionRequests UserActionRequest[]
+  auditLogs     AuditLog[]
 }
 
 // -----------------------------------------------------------------------------
@@ -141,6 +142,7 @@ model Product {
   name        String
   slug        String     @unique
   description String     @db.Text
+  boxContent  String?    @db.Text
   isB2C       Boolean    @default(true)
   isB2B       Boolean    @default(true)
   isActive    Boolean    @default(true)
@@ -480,5 +482,19 @@ model RoleDefinition {
   permissions String[] // e.g. ["ACCESS_ADMIN", "MANAGE_PRODUCTS", "MANAGE_USERS", "VIEW_REPORTS"]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  action      String   // e.g. "CREATE_PRODUCT", "UPDATE_PRODUCT", "DELETE_CATEGORY", "CREATE_CAMPAIGN"
+  entity      String?  // e.g. "Product", "Category", "Campaign"
+  entityId    String?
+  description String   @db.Text
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 

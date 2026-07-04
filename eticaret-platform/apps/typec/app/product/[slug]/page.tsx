@@ -28,7 +28,7 @@ export async function generateMetadata(
     }
   });
 
-  if (!product || !product.isB2C) {
+  if (!product || !product.isB2C || !product.isActive) {
     return {
       title: "Ürün Bulunamadı"
     };
@@ -83,7 +83,7 @@ export default async function ProductPage({ params }: Props) {
     }
   });
 
-  if (!product || !product.isB2C) {
+  if (!product || !product.isB2C || !product.isActive) {
     notFound();
   }
 
@@ -228,6 +228,7 @@ export default async function ProductPage({ params }: Props) {
               <ProductTabs 
                 attributes={defaultVariant?.attributes as any || []} 
                 description={product.description}
+                boxContent={product.boxContent}
                 reviews={product.reviews as any}
               />
             </div>

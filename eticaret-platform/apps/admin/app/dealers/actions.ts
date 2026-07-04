@@ -4,6 +4,7 @@ import { prisma } from "@eticaret/database";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { checkAdminAccess } from "../../auth";
+import { logAdminAction } from "../utils/audit";
 
 type PriceListEnum = "LIST_A" | "LIST_B" | "LIST_C" | "LIST_D";
 
@@ -62,6 +63,13 @@ export async function createDealerAction(data: DealerInput) {
       });
     });
 
+    await logAdminAction(
+      "CREATE_DEALER",
+      "B2BProfile",
+      null,
+      `"${data.companyName}" isimli yeni bayi oluşturuldu (${data.isApproved ? "Onaylandı" : "Onay Bekliyor"}).`
+    );
+
     revalidatePath("/dealers");
     return { success: true };
   } catch (error: any) {
@@ -105,6 +113,13 @@ export async function updateDealerAction(userId: string, data: DealerInput) {
         }
       });
     });
+
+    await logAdminAction(
+      "UPDATE_DEALER",
+      "B2BProfile",
+      userId,
+      `"${data.companyName}" isimli bayinin bilgileri güncellendi.`
+    );
 
     revalidatePath("/dealers");
     return { success: true };

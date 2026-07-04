@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { writeFile, unlink } from "fs/promises";
 import path from "path";
 import { checkAdminAccess } from "../../auth";
+import { logAdminAction } from "../utils/audit";
 
 async function processImages(formData: FormData, existingImages: string[], productName: string) {
   const imageUrls = formData.getAll("imageUrls") as string[];
@@ -51,6 +52,7 @@ export async function createProduct(formData: FormData) {
   await checkAdminAccess();
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
+  const boxContent = formData.get("boxContent") as string | null;
   
   let brandId = formData.get("brandId") as string;
   const newBrandName = formData.get("newBrandName") as string;
@@ -103,12 +105,15 @@ export async function createProduct(formData: FormData) {
         name,
         slug,
         description,
+        boxContent: boxContent || null,
         brandId,
         categoryId,
         isB2C,
         isB2B,
       }
     });
+
+    await logAdminAction("CREATE_PRODUCT", "Product", product.id, `"${product.name}" isimli yeni ürün oluşturuldu.`);
 
     for (const vData of variantsData) {
       const variant = await prisma.variant.create({
@@ -155,6 +160,7 @@ export async function updateProduct(productId: string, variantId: string, formDa
   await checkAdminAccess();
   const name = formData.get("name") as string;
   const description = formData.get("description") as string;
+  const boxContent = formData.get("boxContent") as string | null;
   
   let brandId = formData.get("brandId") as string;
   const newBrandName = formData.get("newBrandName") as string;
@@ -230,12 +236,15 @@ export async function updateProduct(productId: string, variantId: string, formDa
       data: {
         name,
         description,
+        boxContent: boxContent || null,
         brandId,
         categoryId,
         isB2C,
         isB2B,
       }
     });
+
+    await logAdminAction("UPDATE_PRODUCT", "Product", productId, `"${name}" isimli ürün güncellendi.`);
 
     const existingVariants = await prisma.variant.findMany({
       where: { productId }
@@ -336,4 +345,34 @@ export async function updateProduct(productId: string, variantId: string, formDa
 
   revalidatePath("/products");
   redirect("/products?success=updated");
+}
+
+export async function deactivateProduct(productId: string) {
+  await checkAdminAccess();
+  try {
+    const product = await prisma.product.update({
+      where: { id: productId },
+      data: { isActive: false }
+    });
+    await logAdminAction("DEACTIVATE_PRODUCT", "Product", productId, `"${product.name}" isimli ürün satışa kapatıldı.`);
+  } catch (error) {
+    console.error("Error deactivating product:", error);
+    throw new Error("Ürün satışa kapatılırken bir hata oluştu.");
+  }
+  revalidatePath("/products");
+}
+
+export async function activateProduct(productId: string) {
+  await checkAdminAccess();
+  try {
+    const product = await prisma.product.update({
+      where: { id: productId },
+      data: { isActive: true }
+    });
+    await logAdminAction("ACTIVATE_PRODUCT", "Product", productId, `"${product.name}" isimli ürün satışa açıldı.`);
+  } catch (error) {
+    console.error("Error activating product:", error);
+    throw new Error("Ürün satışa açılırken bir hata oluştu.");
+  }
+  revalidatePath("/products");
 }

@@ -5,6 +5,77 @@ import { ArrowLeft, Save, Info, Tag, Layers, Settings, Boxes, Image as ImageIcon
 import Link from "next/link";
 import { createProduct, updateProduct } from "../actions";
 
+const colorMap: Record<string, string> = {
+  siyah: "#1A1A1A",
+  black: "#1A1A1A",
+  beyaz: "#FFFFFF",
+  white: "#FFFFFF",
+  gumus: "#E5E7EB",
+  gümüş: "#E5E7EB",
+  silver: "#E5E7EB",
+  gri: "#9CA3AF",
+  grey: "#9CA3AF",
+  gray: "#9CA3AF",
+  mavi: "#2563EB",
+  blue: "#2563EB",
+  kirmizi: "#EF4444",
+  kırmızı: "#EF4444",
+  red: "#EF4444",
+  yesil: "#10B981",
+  yeşil: "#10B981",
+  green: "#10B981",
+  sari: "#F59E0B",
+  sarı: "#F59E0B",
+  yellow: "#F59E0B",
+  turuncu: "#F97316",
+  orange: "#F97316",
+  pembe: "#EC4899",
+  pink: "#EC4899",
+  mor: "#8B5CF6",
+  purple: "#8B5CF6",
+  titanyum: "#78716C",
+  titanium: "#78716C",
+  gold: "#D4AF37",
+  altin: "#D4AF37",
+  altın: "#D4AF37",
+};
+
+const getColorHex = (name?: string | null) => {
+  if (!name) return "#D1D5DB";
+  
+  // Extract hex code if inside the string
+  const hexMatch = name.match(/#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}/);
+  if (hexMatch) {
+    return hexMatch[0];
+  }
+  
+  const normalized = name.toLowerCase().trim();
+  if (colorMap[normalized]) return colorMap[normalized];
+  
+  for (const [key, value] of Object.entries(colorMap)) {
+    if (normalized.includes(key) || key.includes(normalized)) {
+      return value;
+    }
+  }
+  return "#D1D5DB";
+};
+
+const quickColors = [
+  { name: "Siyah", hex: "#1A1A1A" },
+  { name: "Beyaz", hex: "#FFFFFF" },
+  { name: "Gümüş", hex: "#E5E7EB" },
+  { name: "Gri", hex: "#9CA3AF" },
+  { name: "Mavi", hex: "#2563EB" },
+  { name: "Kırmızı", hex: "#EF4444" },
+  { name: "Yeşil", hex: "#10B981" },
+  { name: "Sarı", hex: "#F59E0B" },
+  { name: "Turuncu", hex: "#F97316" },
+  { name: "Pembe", hex: "#EC4899" },
+  { name: "Mor", hex: "#8B5CF6" },
+  { name: "Titanyum", hex: "#78716C" },
+  { name: "Gold", hex: "#D4AF37" }
+];
+
 function ReserveRatioSlider({ defaultValue }: { defaultValue: number }) {
   const [value, setValue] = useState(defaultValue);
   return (
@@ -49,8 +120,44 @@ export function ProductForm({ brands, categories, product = null }: { brands: an
       : [{ color: "", sku: "", barcode: "", totalStock: 0 }]
   );
 
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [showColorSelector, setShowColorSelector] = useState(false);
+
   const handleAddVariant = () => {
     setVariants([...variants, { color: "", sku: "", barcode: "", totalStock: 0 }]);
+  };
+
+  const handleToggleColor = (colorName: string) => {
+    if (selectedColors.includes(colorName)) {
+      setSelectedColors(selectedColors.filter(c => c !== colorName));
+    } else {
+      setSelectedColors([...selectedColors, colorName]);
+    }
+  };
+
+  const handleAddSelectedColors = () => {
+    const newVariants = selectedColors
+      .filter(color => !variants.some(v => v.color.toLowerCase() === color.toLowerCase()))
+      .map((color, idx) => {
+        const baseSku = product?.variants?.[0]?.sku || "SKU";
+        const suffix = color.substring(0, 3).toUpperCase() + (idx > 0 ? idx : "");
+        return {
+          color,
+          sku: `${baseSku}-${suffix}`,
+          barcode: "",
+          totalStock: 0
+        };
+      });
+
+    if (newVariants.length > 0) {
+      if (variants.length === 1 && variants[0]?.color === "") {
+        setVariants(newVariants);
+      } else {
+        setVariants([...variants, ...newVariants]);
+      }
+    }
+    setSelectedColors([]);
+    setShowColorSelector(false);
   };
 
   const handleRemoveVariant = (index: number) => {
@@ -186,6 +293,10 @@ export function ProductForm({ brands, categories, product = null }: { brands: an
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">Açıklama</label>
                 <textarea required name="description" rows={4} defaultValue={product?.description} placeholder="Ürün özelliklerini ve detaylarını buraya girin..." className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 text-sm font-medium focus:ring-2 focus:ring-blue-500/20 outline-none transition-all resize-none"></textarea>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">Kutu İçeriği</label>
+                <textarea name="boxContent" rows={3} defaultValue={product?.boxContent} placeholder="Örn: 1x Şarj Adaptörü, 1x Type-C Hızlı Şarj Kablosu, 1x Garanti Belgesi" className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 text-sm font-medium focus:ring-2 focus:ring-blue-500/20 outline-none transition-all resize-none"></textarea>
               </div>
             </div>
           </div>
@@ -357,83 +468,157 @@ export function ProductForm({ brands, categories, product = null }: { brands: an
 
           {/* Inventory & SKU */}
           <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-8">
-            <div className="flex items-center justify-between mb-6">
+            <div className="space-y-4 mb-6 relative">
               <div className="flex items-center gap-2">
                 <Boxes className="w-5 h-5 text-gray-400" />
                 <h2 className="text-sm font-black uppercase tracking-widest text-slate-800">Renk Varyantları</h2>
               </div>
-              <button
-                type="button"
-                onClick={handleAddVariant}
-                className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors"
-              >
-                + Renk Ekle
-              </button>
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowColorSelector(!showColorSelector)}
+                    className="text-xs font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-colors"
+                  >
+                    + Çoklu Renk Ekle
+                  </button>
+                  {showColorSelector && (
+                    <div className="absolute left-0 mt-2 w-56 bg-white border border-gray-100 rounded-2xl shadow-xl p-4 z-50 space-y-3">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Renk Seçin</p>
+                      <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto no-scrollbar">
+                        {quickColors.map(qc => (
+                          <label key={qc.name} className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer p-1 hover:bg-slate-50 rounded-lg">
+                            <input
+                              type="checkbox"
+                              checked={selectedColors.includes(qc.name)}
+                              onChange={() => handleToggleColor(qc.name)}
+                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <span className="w-3 h-3 rounded-full border border-gray-200" style={{ backgroundColor: qc.hex }} />
+                            <span>{qc.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleAddSelectedColors}
+                        className="w-full text-center py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-colors"
+                      >
+                        Seçilenleri Ekle
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddVariant}
+                  className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors"
+                >
+                  + Renk Ekle (Boş)
+                </button>
+              </div>
             </div>
             
             <div className="space-y-6">
-              {variants.map((v, index) => (
-                <div key={index} className="p-5 bg-gray-50 border border-gray-100 rounded-2xl relative space-y-4">
-                  {variants.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveVariant(index)}
-                      className="absolute top-4 right-4 text-xs font-bold text-red-500 hover:text-red-700"
-                    >
-                      Kaldır
-                    </button>
-                  )}
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {variants.map((v, index) => {
+                const stdColorsList = quickColors.map(c => c.name);
+                const isCustomColor = v.color && !stdColorsList.includes(v.color) && v.color !== "Özel";
+                return (
+                  <div key={index} className="p-6 bg-slate-50 border border-slate-100 rounded-3xl relative space-y-4 shadow-inner">
+                    {variants.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveVariant(index)}
+                        className="absolute top-4 right-4 text-xs font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg transition-colors"
+                      >
+                        Kaldır
+                      </button>
+                    )}
+                    
+                    {/* Renk Seçimi Row */}
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">Renk Adı</label>
-                      <input
-                        required
-                        type="text"
-                        value={v.color}
-                        onChange={(e) => handleVariantChange(index, "color", e.target.value)}
-                        placeholder="Örn: Siyah / Gümüş"
-                        className="w-full bg-white border border-gray-100 rounded-2xl py-3 px-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
-                      />
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Renk Seçimi</label>
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-10 h-10 rounded-full border border-slate-200 shadow-inner flex-shrink-0 transition-all duration-300"
+                          style={{ backgroundColor: getColorHex(v.color) }}
+                          title={v.color || "Renk Seçilmedi"}
+                        />
+                        <div className="flex-1 relative">
+                          <select
+                            value={stdColorsList.includes(v.color) ? v.color : (v.color ? "Özel" : "")}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === "Özel") {
+                                handleVariantChange(index, "color", "Özel");
+                              } else {
+                                handleVariantChange(index, "color", val);
+                              }
+                            }}
+                            className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all appearance-none"
+                          >
+                            <option value="">Seçiniz...</option>
+                            {quickColors.map(qc => (
+                              <option key={qc.name} value={qc.name}>{qc.name}</option>
+                            ))}
+                            <option value="Özel">Özel Renk...</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Özel Renk Metin Girişi */}
+                      {(isCustomColor || v.color === "Özel") && (
+                        <input
+                          required
+                          type="text"
+                          value={v.color === "Özel" ? "" : v.color}
+                          onChange={(e) => handleVariantChange(index, "color", e.target.value)}
+                          placeholder="Örn: Gece Yeşili (#0F2F1D)"
+                          className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all mt-2"
+                        />
+                      )}
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">Stok Kodu (SKU)</label>
+
+                    {/* SKU Row */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Stok Kodu (SKU)</label>
                       <input
                         required
                         type="text"
                         value={v.sku}
                         onChange={(e) => handleVariantChange(index, "sku", e.target.value)}
                         placeholder="Örn: BAS-65W-BLK"
-                        className="w-full bg-white border border-gray-100 rounded-2xl py-3 px-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all uppercase"
+                        className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all uppercase"
                       />
                     </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">Barkod (EAN/UPC)</label>
+
+                    {/* Barkod Row */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Barkod (EAN/UPC)</label>
                       <input
                         type="text"
                         value={v.barcode}
                         onChange={(e) => handleVariantChange(index, "barcode", e.target.value)}
                         placeholder="Opsiyonel"
-                        className="w-full bg-white border border-gray-100 rounded-2xl py-3 px-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                        className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-1">Toplam Stok</label>
+
+                    {/* Stok Row */}
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Toplam Stok</label>
                       <input
                         required
                         min="0"
                         type="number"
                         value={v.totalStock}
                         onChange={(e) => handleVariantChange(index, "totalStock", Number(e.target.value))}
-                        className="w-full bg-white border border-gray-100 rounded-2xl py-3 px-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                        className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-3 text-xs font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
                       />
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

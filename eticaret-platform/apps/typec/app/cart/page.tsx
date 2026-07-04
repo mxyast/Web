@@ -6,6 +6,16 @@ import { Button } from "@repo/ui/button";
 import { ShoppingBag, Trash2, Plus, Minus, ArrowRight } from "lucide-react";
 import { useCartStore } from "../../store/cartStore";
 
+const resolveImage = (img: string) => {
+   if (!img) return "https://images.unsplash.com/photo-1616440347437-b1c73416efc2?q=80&w=600";
+   if (img.startsWith("/api/uploads/") || img.startsWith("/uploads/")) {
+      const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL || "";
+      const cleanPath = img.startsWith("/uploads/") ? img.replace("/uploads/", "/api/uploads/") : img;
+      return `${adminUrl}${cleanPath}`;
+   }
+   return img;
+};
+
 export default function CartPage() {
    const [isMounted, setIsMounted] = useState(false);
    const items = useCartStore((state) => state.items);
@@ -35,7 +45,7 @@ export default function CartPage() {
                         {items.map((item) => (
                            <div key={item.id} className="flex items-center gap-6 p-6 rounded-3xl bg-[#F9F9F9] border border-[var(--color-typec-border)]">
                               <div className="w-24 h-24 rounded-2xl bg-white flex items-center justify-center shrink-0 overflow-hidden border border-gray-100">
-                                 <img src={item.image} alt={item.name} className="w-full h-full object-contain mix-blend-multiply" />
+                                 <img src={resolveImage(item.image)} alt={item.name} className="w-full h-full object-contain mix-blend-multiply" />
                               </div>
 
                               <div className="flex-1 min-w-0">

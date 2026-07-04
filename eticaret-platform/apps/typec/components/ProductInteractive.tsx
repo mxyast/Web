@@ -58,8 +58,26 @@ const colorMap: Record<string, string> = {
 
 const getColorHex = (name?: string | null) => {
   if (!name) return "#D1D5DB";
+  
+  // Extract hex code if inside the string
+  const hexMatch = name.match(/#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}/);
+  if (hexMatch) {
+    return hexMatch[0];
+  }
+  
   const normalized = name.toLowerCase().trim();
-  return colorMap[normalized] || "#D1D5DB";
+  if (colorMap[normalized]) return colorMap[normalized];
+  
+  for (const [key, value] of Object.entries(colorMap)) {
+    if (normalized.includes(key) || key.includes(normalized)) {
+      return value;
+    }
+  }
+  return "#D1D5DB";
+};
+
+const cleanColorName = (name?: string | null) => {
+  return name ? name.replace(/\s*\(#.*\)/g, "") : "Standart";
 };
 
 export function ProductInteractive({ productId, productName, variants, brandName }: ProductInteractiveProps) {
@@ -133,7 +151,7 @@ export function ProductInteractive({ productId, productName, variants, brandName
       price: selectedVariant.price?.retailPrice ? Number(selectedVariant.price.retailPrice) : 0,
       quantity: 1,
       image: displayImages[0] ?? "",
-      variantName: selectedVariant.color || "Standart",
+      variantName: cleanColorName(selectedVariant.color),
     });
     
     alert("Ürün sepete eklendi!");
@@ -154,7 +172,7 @@ export function ProductInteractive({ productId, productName, variants, brandName
           <div className="flex items-center gap-2 mb-5">
             <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400">Renk Seçeneği:</h4>
             <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black">
-              {selectedVariant?.color || "Standart"}
+              {cleanColorName(selectedVariant?.color)}
             </span>
           </div>
           <div className="flex flex-wrap gap-4">
@@ -162,13 +180,13 @@ export function ProductInteractive({ productId, productName, variants, brandName
               <button 
                 key={v.id} 
                 onClick={() => setSelectedVariant(v)}
-                aria-label={`Renk seçeneği ${v.color || "Standart"}`}
+                aria-label={`Renk seçeneği ${cleanColorName(v.color)}`}
                 className={`w-12 h-12 rounded-[1.2rem] border-2 transition-all p-1 flex items-center justify-center ${selectedVariant?.id === v.id ? "border-black" : "border-transparent hover:border-gray-200"}`}
               >
                 <div 
                   className="w-full h-full rounded-[0.9rem] shadow-inner border border-gray-100" 
                   style={{ backgroundColor: getColorHex(v.color) }} 
-                  title={v.color || "Standart"}
+                  title={cleanColorName(v.color)}
                 />
               </button>
             ))}
@@ -216,7 +234,7 @@ export function ProductInteractive({ productId, productName, variants, brandName
               price: selectedVariant.price?.retailPrice ? Number(selectedVariant.price.retailPrice) : 0,
               image: displayImages[0] ?? "",
               brand: brandName,
-              variantName: selectedVariant.color || "Standart",
+              variantName: cleanColorName(selectedVariant.color),
             });
           }}
           className={`w-16 h-16 rounded-[2rem] flex items-center justify-center transition-all ${
@@ -264,7 +282,7 @@ export function ProductInteractive({ productId, productName, variants, brandName
             />
             <div className="flex flex-col min-w-0">
               <h4 className="text-[11px] font-black text-black truncate tracking-tight uppercase mb-0.5">{productName}</h4>
-              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">{selectedVariant?.color || "Standart"}</p>
+              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">{cleanColorName(selectedVariant?.color)}</p>
             </div>
           </div>
           <div className="flex items-center gap-4 flex-shrink-0">

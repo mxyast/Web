@@ -109,10 +109,10 @@ export const Footer = ({ platform }: FooterProps) => {
             <h5 className="text-[11px] font-bold tracking-[0.2em] text-[#1A1A1A] uppercase mb-10" style={{ fontFamily: 'var(--font-heading)' }}>Kurumsal</h5>
             <ul className="space-y-4">
               {[
-                { name: "Hakkımızda", href: "#" },
-                { name: "Kariyer", href: "#" },
-                { name: "Sürdürülebilirlik", href: "#" },
-                { name: "Mağazalarımız", href: "#" },
+                { name: "Hakkımızda", href: "/about" },
+                { name: "Kariyer", href: "/about#careers" },
+                { name: "Sürdürülebilirlik", href: "/about#sustainability" },
+                { name: "Mağazalarımız", href: "/about#stores" },
                 { name: "İletişim", href: isTypeC ? "/contact" : "#" }
               ].map((link) => (
                 <li key={link.name}>
@@ -125,9 +125,15 @@ export const Footer = ({ platform }: FooterProps) => {
           <div className="lg:col-span-2">
             <h5 className="text-[11px] font-bold tracking-[0.2em] text-[#1A1A1A] uppercase mb-10" style={{ fontFamily: 'var(--font-heading)' }}>Yardım</h5>
             <ul className="space-y-4">
-              {["Sıkça Sorulan Sorular", "Kargo Takip", "İade Koşulları", "Garanti Şartları", "Kullanım Şartları"].map((link) => (
-                <li key={link}>
-                  <Link href="#" className="text-sm text-gray-400 hover:text-[#E31E24] transition-colors font-medium">{link}</Link>
+              {[
+                { name: "Sıkça Sorulan Sorular", href: "/faq" },
+                { name: "Kargo Takip", href: "/orders" },
+                { name: "İade Koşulları", href: "/returns" },
+                { name: "Garanti Şartları", href: "/returns#warranty" },
+                { name: "Kullanım Şartları", href: "/terms" }
+              ].map((link) => (
+                <li key={link.name}>
+                  <Link href={link.href} className="text-sm text-gray-400 hover:text-[#E31E24] transition-colors font-medium">{link.name}</Link>
                 </li>
               ))}
             </ul>
@@ -163,8 +169,8 @@ export const Footer = ({ platform }: FooterProps) => {
               © 2026 {platform} • TÜM HAKLARI SAKLIDIR.
             </p>
             <div className="flex gap-4">
-              <Link href="#" className="text-[10px] font-bold text-gray-400 hover:text-[#1A1A1A] transition-colors uppercase tracking-widest">KVKK</Link>
-              <Link href="#" className="text-[10px] font-bold text-gray-400 hover:text-[#1A1A1A] transition-colors uppercase tracking-widest">Çerez Politikası</Link>
+              <Link href="/privacy" className="text-[10px] font-bold text-gray-400 hover:text-[#1A1A1A] transition-colors uppercase tracking-widest">KVKK</Link>
+              <Link href="/privacy#cookies" className="text-[10px] font-bold text-gray-400 hover:text-[#1A1A1A] transition-colors uppercase tracking-widest">Çerez Politikası</Link>
             </div>
           </div>
 

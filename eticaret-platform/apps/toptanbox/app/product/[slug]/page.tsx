@@ -23,7 +23,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     }
   });
 
-  if (!product || !product.isB2B) {
+  if (!product || !product.isB2B || !product.isActive) {
     notFound();
   }
 

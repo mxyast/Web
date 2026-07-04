@@ -30,7 +30,16 @@ export default async function ProductsPage({
     return { ...p, availableStock };
   }));
 
-  const categories = await prisma.category.findMany();
+  const categories = await prisma.category.findMany({
+    where: { parentId: null, isActive: true },
+    include: {
+      children: {
+        where: { isActive: true },
+        orderBy: { sortOrder: 'asc' }
+      }
+    },
+    orderBy: { sortOrder: 'asc' }
+  });
   const brands = await prisma.brand.findMany();
 
   return (
@@ -72,16 +81,41 @@ export default async function ProductsPage({
                       <div>
                          <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 block">Kategoriler</label>
                          <div className="space-y-3">
-                            {categories.map((c: any) => (
-                               <Link 
-                                 key={c.id} 
-                                 href={`/products?cat=${c.id}${isListView ? '&view=list' : ''}`}
-                                 className={`flex items-center justify-between group cursor-pointer ${searchParams.cat === c.id ? "text-orange-600" : "text-gray-500"}`}
-                               >
-                                  <span className="text-sm font-bold group-hover:text-black transition-colors">{c.name}</span>
-                                  <div className={`w-1.5 h-1.5 rounded-full ${searchParams.cat === c.id ? "bg-orange-600" : "bg-transparent"}`} />
-                               </Link>
-                            ))}
+                             {categories.map((c: any) => {
+                                const isCurrentActive = searchParams.cat === c.id;
+                                const isChildActive = c.children.some((child: any) => searchParams.cat === child.id);
+                                const isExpanded = isCurrentActive || isChildActive;
+
+                                return (
+                                  <div key={c.id} className="space-y-2">
+                                     <Link 
+                                       href={`/products?cat=${c.id}${isListView ? '&view=list' : ''}`}
+                                       className={`flex items-center justify-between group cursor-pointer ${isCurrentActive ? "text-orange-600" : "text-gray-500"}`}
+                                     >
+                                        <span className="text-sm font-bold group-hover:text-black transition-colors">{c.name}</span>
+                                        <div className={`w-1.5 h-1.5 rounded-full ${isCurrentActive ? "bg-orange-600" : "bg-transparent"}`} />
+                                     </Link>
+
+                                     {isExpanded && c.children.length > 0 && (
+                                       <div className="pl-4 space-y-2 border-l border-gray-100 ml-1 mt-1">
+                                          {c.children.map((child: any) => {
+                                             const isChildCurrent = searchParams.cat === child.id;
+                                             return (
+                                               <Link 
+                                                 key={child.id} 
+                                                 href={`/products?cat=${child.id}${isListView ? '&view=list' : ''}`}
+                                                 className={`flex items-center justify-between group cursor-pointer ${isChildCurrent ? "text-orange-600" : "text-gray-400 hover:text-black"}`}
+                                               >
+                                                  <span className="text-xs font-semibold transition-colors">{child.name}</span>
+                                                  <div className={`w-1 h-1 rounded-full ${isChildCurrent ? "bg-orange-600" : "bg-transparent"}`} />
+                                               </Link>
+                                             );
+                                          })}
+                                       </div>
+                                     )}
+                                  </div>
+                                );
+                             })}
                          </div>
                       </div>
 

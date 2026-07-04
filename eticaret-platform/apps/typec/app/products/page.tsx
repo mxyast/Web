@@ -27,7 +27,16 @@ export default async function ProductsPage({
     sort: searchParams.sort,
   });
 
-  const categories = await prisma.category.findMany();
+  const categories = await prisma.category.findMany({
+    where: { parentId: null, isActive: true },
+    include: {
+      children: {
+        where: { isActive: true },
+        orderBy: { sortOrder: 'asc' }
+      }
+    },
+    orderBy: { sortOrder: 'asc' }
+  });
   const brands = await prisma.brand.findMany();
 
   let pageTitle = "Ürün Koleksiyonu";
@@ -72,23 +81,55 @@ export default async function ProductsPage({
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-6">Kategoriler</p>
                     <div className="space-y-4">
                       {categories.map((cat) => {
+                        const isCurrentActive = searchParams.cat === cat.id;
+                        const isChildActive = cat.children.some(child => searchParams.cat === child.id);
+                        const isExpanded = isCurrentActive || isChildActive;
+
                         const params = new URLSearchParams();
                         Object.entries(searchParams).forEach(([k, v]) => {
                           if (typeof v === "string") params.set(k, v);
                         });
 
-                        if (params.get("cat") === cat.id) params.delete("cat");
+                        if (isCurrentActive) params.delete("cat");
                         else params.set("cat", cat.id);
 
                         return (
-                          <Link
-                            key={cat.id}
-                            href={`/products?${params.toString()}`}
-                            className={`flex items-center justify-between group cursor-pointer transition-all ${searchParams.cat === cat.id ? "text-black" : "text-gray-500 hover:text-black"}`}
-                          >
-                            <span className={`text-[13px] font-bold ${searchParams.cat === cat.id ? "translate-x-1" : ""} transition-transform`}>{cat.name}</span>
-                            <div className={`w-1 h-1 rounded-full ${searchParams.cat === cat.id ? "bg-typec-red" : "bg-transparent"}`} />
-                          </Link>
+                          <div key={cat.id} className="space-y-2">
+                            <Link
+                              href={`/products?${params.toString()}`}
+                              className={`flex items-center justify-between group cursor-pointer transition-all ${isCurrentActive ? "text-black" : "text-gray-500 hover:text-black"}`}
+                            >
+                              <span className={`text-[13px] font-bold ${isCurrentActive ? "translate-x-1" : ""} transition-transform`}>{cat.name}</span>
+                              <div className={`w-1 h-1 rounded-full ${isCurrentActive ? "bg-typec-red" : "bg-transparent"}`} />
+                            </Link>
+
+                            {/* Subcategories */}
+                            {isExpanded && cat.children.length > 0 && (
+                              <div className="pl-4 space-y-2 border-l border-gray-100 ml-1 mt-1">
+                                {cat.children.map((child) => {
+                                  const isChildCurrent = searchParams.cat === child.id;
+                                  const childParams = new URLSearchParams();
+                                  Object.entries(searchParams).forEach(([k, v]) => {
+                                    if (typeof v === "string") childParams.set(k, v);
+                                  });
+
+                                  if (isChildCurrent) childParams.delete("cat");
+                                  else childParams.set("cat", child.id);
+
+                                  return (
+                                    <Link
+                                      key={child.id}
+                                      href={`/products?${childParams.toString()}`}
+                                      className={`flex items-center justify-between group cursor-pointer transition-all ${isChildCurrent ? "text-typec-red" : "text-gray-400 hover:text-black"}`}
+                                    >
+                                      <span className="text-[12px] font-medium">{child.name}</span>
+                                      <div className={`w-1 h-1 rounded-full ${isChildCurrent ? "bg-typec-red" : "bg-transparent"}`} />
+                                    </Link>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
                         );
                       })}
                     </div>

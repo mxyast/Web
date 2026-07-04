@@ -20,7 +20,7 @@ const DEFAULT_IMAGES: Record<string, string> = {
 const DEFAULT_BANNER_IMAGE = "https://images.unsplash.com/photo-1616440347437-b1c73416efc2?q=80&w=2070&auto=format&fit=crop";
 
 export default async function Home() {
-  const [products, sections, banner] = await Promise.all([
+  const [featuredProducts, popularProducts, sections, banner, dbBrands] = await Promise.all([
     prisma.product.findMany({
       where: { isB2C: true, isActive: true },
       include: {
@@ -33,13 +33,33 @@ export default async function Home() {
       take: 10,
       orderBy: { createdAt: "desc" }
     }),
+    prisma.product.findMany({
+      where: { isB2C: true, isActive: true },
+      include: {
+        brand: true,
+        variants: {
+          where: { isActive: true },
+          include: { price: true }
+        }
+      },
+      take: 10,
+      orderBy: { name: "asc" }
+    }),
     prisma.homepageSection.findMany({
       where: { isActive: true, isDraft: false },
       orderBy: { sortOrder: "asc" },
       include: { category: true },
     }),
     prisma.homepageBanner.findFirst({ where: { isActive: true, isDraft: false } }),
+    prisma.brand.findMany({
+      take: 8,
+      orderBy: { name: "asc" }
+    }),
   ]);
+
+  const displayBrands = dbBrands.length > 0
+    ? dbBrands.map((b) => b.name)
+    : ["BASEUS", "typec", "WUW", "ANKER", "SAMSUNG", "APPLE"];
 
   const websiteSchema = {
     "@context": "https://schema.org",
@@ -87,7 +107,7 @@ export default async function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
       />
       {/* Category Grid - Viewport Fill Hero */}
-      <section className="px-4 md:px-8 max-w-[1440px] mx-auto pt-[48px]" style={{ height: '90dvh' }}>
+      <section className="px-4 md:px-8 max-w-[1440px] mx-auto pt-[48px] h-auto lg:h-[90dvh]">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 h-full pb-3">
           {/* Main Feature */}
           <Link href="/products" className="md:col-span-2 md:row-span-2 group relative overflow-hidden rounded-[1.5rem] min-h-[260px]">
@@ -159,11 +179,24 @@ export default async function Home() {
       </section>
 
       {/* Popular Brands Banner */}
-      <section className="py-12 border-y border-gray-100 bg-gray-50/50">
-        <div className="max-w-[1440px] mx-auto px-6 md:px-12">
-          <div className="flex flex-wrap items-center justify-between gap-12 opacity-30 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-1000">
-            {["BASEUS", "typec", "WUW", "ANKER", "SAMSUNG", "APPLE"].map(brand => (
-              <span key={brand} className="text-2xl font-black tracking-tighter text-[#1A1A1A]">{brand}</span>
+      <section className="py-12 border-y border-gray-100 bg-gray-50/50 overflow-hidden">
+        <style dangerouslySetInnerHTML={{__html: `
+          @keyframes marqueeLtr {
+            0% { transform: translate3d(-50%, 0, 0); }
+            100% { transform: translate3d(0, 0, 0); }
+          }
+          .animate-marquee-ltr {
+            display: flex;
+            width: max-content;
+            animation: marqueeLtr 30s linear infinite;
+          }
+        `}} />
+        <div className="w-full overflow-hidden relative">
+          <div className="animate-marquee-ltr items-center opacity-30 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-1000">
+            {[...displayBrands, ...displayBrands, ...displayBrands, ...displayBrands].map((brand, idx) => (
+              <span key={idx} className="text-2xl font-black tracking-tighter text-[#1A1A1A] uppercase whitespace-nowrap mx-12">
+                {brand}
+              </span>
             ))}
           </div>
         </div>
@@ -185,7 +218,41 @@ export default async function Home() {
 
         <div className="relative">
           <ProductSliderClient
-            products={products.map((product) => {
+            products={featuredProducts.map((product) => {
+              const firstVariant = product.variants[0];
+              const displayPrice = firstVariant?.price?.retailPrice ? Number(firstVariant.price.retailPrice) : 0;
+              const comparePrice = firstVariant?.price?.comparePrice ? Number(firstVariant.price.comparePrice) : undefined;
+              return {
+                id: product.id,
+                name: product.name,
+                slug: product.slug,
+                brand: { name: product.brand?.name || "typec" },
+                price: { retailPrice: displayPrice, comparePrice },
+                image: firstVariant?.images?.[0] || "https://images.unsplash.com/photo-1616440347437-b1c73416efc2?q=80&w=600",
+                variantId: firstVariant?.id,
+              };
+            })}
+          />
+        </div>
+      </section>
+
+      {/* Popular Products */}
+      <section className="pb-32 max-w-[1440px] mx-auto px-6 md:px-12">
+        <div className="flex flex-col md:flex-row items-baseline justify-between mb-20 gap-6">
+          <div>
+            <h2 className="text-4xl font-black tracking-tighter text-[#1A1A1A] mb-4" style={{ fontFamily: 'var(--font-heading)' }}>
+              POPÜLER SEÇİMLER
+            </h2>
+            <p className="text-gray-400 font-medium">En çok tercih edilen, en çok yorum alan popüler teknoloji aksesuarları.</p>
+          </div>
+          <Link href="/products?sort=popular" className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-[#1A1A1A] hover:text-[#E31E24] transition-all">
+            TÜMÜNÜ GÖR <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </Link>
+        </div>
+
+        <div className="relative">
+          <ProductSliderClient
+            products={popularProducts.map((product) => {
               const firstVariant = product.variants[0];
               const displayPrice = firstVariant?.price?.retailPrice ? Number(firstVariant.price.retailPrice) : 0;
               const comparePrice = firstVariant?.price?.comparePrice ? Number(firstVariant.price.comparePrice) : undefined;

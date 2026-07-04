@@ -3,8 +3,9 @@ import { Package, Search, Monitor, Box, ShieldCheck, AlertCircle, Tag, Plus } fr
 import { Header } from "../../components/Header";
 import Link from "next/link";
 import { ToastContainer } from "../../components/Toast";
+import { ProductStatusButton } from "./ProductStatusButton";
 
-type Tab = "all" | "b2c" | "b2b" | "pricing";
+type Tab = "all" | "b2c" | "b2b" | "pricing" | "inactive";
 
 export default async function ProductsPage({
   searchParams,
@@ -14,9 +15,10 @@ export default async function ProductsPage({
   const { success, tab = "all" } = await searchParams;
 
   const whereClause =
-    tab === "b2c" ? { isB2C: true } :
-    tab === "b2b" ? { isB2B: true } :
-    {};
+    tab === "b2c" ? { isB2C: true, isActive: true } :
+    tab === "b2b" ? { isB2B: true, isActive: true } :
+    tab === "inactive" ? { isActive: false } :
+    { isActive: true }; // default for "all" and "pricing"
 
   const products = await prisma.product.findMany({
     where: whereClause,
@@ -37,6 +39,7 @@ export default async function ProductsPage({
     { id: "all", label: "Tümü", icon: Package },
     { id: "b2c", label: "B2C Perakende", icon: Monitor },
     { id: "b2b", label: "B2B Toptan", icon: Box },
+    { id: "inactive", label: "Satışa Kapatılanlar", icon: AlertCircle },
     { id: "pricing", label: "Fiyat Listeleri", icon: Tag },
   ];
 
@@ -130,7 +133,10 @@ export default async function ProductsPage({
                           <span className="text-xs font-black text-gray-500 bg-gray-100 px-2 py-1 rounded-lg">%{Number(price?.taxRate ?? 20)}</span>
                         </td>
                         <td className="px-6 py-5 text-right">
-                          <Link href={`/products/${product.id}/edit`} className="text-xs font-bold text-blue-600 hover:underline">Düzenle</Link>
+                          <div className="flex items-center justify-end gap-3">
+                            <Link href={`/products/${product.id}/edit`} className="text-xs font-bold text-blue-600 hover:underline">Düzenle</Link>
+                            <ProductStatusButton productId={product.id} isActive={product.isActive} />
+                          </div>
                         </td>
                       </tr>
                     );
@@ -227,7 +233,10 @@ export default async function ProductsPage({
                         </div>
                       </td>
                       <td className="px-8 py-6 text-right">
-                        <Link href={`/products/${product.id}/edit`} className="text-xs font-bold text-blue-600 hover:underline">Düzenle</Link>
+                        <div className="flex items-center justify-end gap-3">
+                          <Link href={`/products/${product.id}/edit`} className="text-xs font-bold text-blue-600 hover:underline">Düzenle</Link>
+                          <ProductStatusButton productId={product.id} isActive={product.isActive} />
+                        </div>
                       </td>
                     </tr>
                   );

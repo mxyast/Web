@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Users, Package, ShoppingCart, FileText, Settings, BarChart3, CreditCard, PlusCircle, Megaphone, Tag, LayoutTemplate, Shield, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, Package, ShoppingCart, FileText, Settings, BarChart3, CreditCard, PlusCircle, Megaphone, Tag, LayoutTemplate, Shield, LogOut, ClipboardList } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -18,6 +18,8 @@ const menuItems = [
   { href: "/catalogs", label: "Katalog Motoru", icon: FileText, category: "B2B (ToptanBox)" },
   { href: "/users", label: "Kullanıcı Yönetimi", icon: Users, category: "Raporlar & Sistem" },
   { href: "/roles", label: "Rol & Yetki Yönetimi", icon: Shield, category: "Raporlar & Sistem" },
+  { href: "/logs", label: "İşlem Logları", icon: ClipboardList, category: "Raporlar & Sistem" },
+  { href: "/settings", label: "Sistem Ayarları", icon: Settings, category: "Raporlar & Sistem" },
   { href: "/reports", label: "Satış Analitikleri", icon: BarChart3, category: "Raporlar & Sistem" },
 ];
 

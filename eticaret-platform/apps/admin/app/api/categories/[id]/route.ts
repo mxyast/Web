@@ -1,6 +1,7 @@
 import { prisma } from "@eticaret/database";
 import { NextResponse } from "next/server";
 import { checkAdminAccess } from "../../../../auth";
+import { logAdminAction } from "../../../utils/audit";
 
 export async function DELETE(
   request: Request,
@@ -28,7 +29,17 @@ export async function DELETE(
       );
     }
 
+    const category = await prisma.category.findUnique({
+      where: { id },
+      select: { name: true }
+    });
+
     await prisma.category.delete({ where: { id } });
+
+    if (category) {
+      await logAdminAction("DELETE_CATEGORY", "Category", id, `"${category.name}" isimli kategori silindi.`);
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Category delete error:", error);

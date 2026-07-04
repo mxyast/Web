@@ -23,11 +23,12 @@ interface Review {
 interface ProductTabsProps {
   attributes: Attribute[];
   description: string;
+  boxContent?: string | null;
   reviews?: Review[];
 }
 
-export function ProductTabs({ attributes, description, reviews = [] }: ProductTabsProps) {
-  const tabs = ["Ürün Açıklaması", "Kutu İçeriği", `Kullanıcı Yorumları (${reviews.length})`];
+export function ProductTabs({ attributes, description, boxContent, reviews = [] }: ProductTabsProps) {
+  const tabs = ["Ürün Açıklaması", "Teknik Özellikler", `Kullanıcı Yorumları (${reviews.length})`];
   const [activeTab, setActiveTab] = useState(0);
 
   return (
@@ -56,9 +57,21 @@ export function ProductTabs({ attributes, description, reviews = [] }: ProductTa
             </div>
           )}
           {activeTab === 1 && (
-            <div>
-              <h3 className="text-2xl font-black tracking-tight mb-6">Detaylı Kutu İçeriği</h3>
-              <p className="text-gray-500 font-medium">Bu bölümde cihazın kutu içeriğini inceleyebilirsiniz.</p>
+            <div className="space-y-6">
+              <h3 className="text-2xl font-black tracking-tight mb-6">Teknik Özellikler</h3>
+              <div className="bg-[#FBFBFB] rounded-3xl p-8 border border-gray-100 space-y-4">
+                {attributes.map((attr) => (
+                  <div key={attr.id} className="flex justify-between py-3 border-b border-gray-100 last:border-0">
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{attr.key}</span>
+                    <span className="text-xs font-black text-black">
+                      {attr.value} {attr.unit || ""}
+                    </span>
+                  </div>
+                ))}
+                {!attributes.length && (
+                  <p className="text-xs text-gray-400 font-medium italic">Bu ürün için teknik özellik bilgiisi girilmemiş.</p>
+                )}
+              </div>
             </div>
           )}
           {activeTab === 2 && (
@@ -106,15 +119,11 @@ export function ProductTabs({ attributes, description, reviews = [] }: ProductTa
         <div className="bg-gray-50 rounded-[3rem] p-10 border border-gray-100 h-fit">
           <h4 className="text-lg font-black tracking-tight mb-8">Kutu İçeriği</h4>
           <div className="space-y-4">
-            {attributes.map((attr) => (
-              <div key={attr.id} className="flex flex-col py-3 border-b border-gray-200/50 last:border-0">
-                <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">{attr.key}</span>
-                <span className="text-sm font-black text-black">
-                  {attr.value} {attr.unit || ""}
-                </span>
-              </div>
-            ))}
-            {!attributes.length && (
+            {boxContent ? (
+              <p className="text-sm text-gray-600 font-medium leading-relaxed whitespace-pre-line">
+                {boxContent}
+              </p>
+            ) : (
               <p className="text-xs text-gray-400 font-medium italic">Bu ürün için henüz kutu içeriği bilgisi girilmemiş.</p>
             )}
           </div>

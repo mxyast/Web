@@ -58,7 +58,21 @@ export default async function RootLayout({
   const categories = await prisma.category.findMany({
     where: { isActive: true, parentId: null },
     orderBy: { sortOrder: 'asc' },
-    select: { id: true, name: true, slug: true }
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      children: {
+        where: { isActive: true },
+        orderBy: { sortOrder: 'asc' },
+        take: 2,
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        }
+      }
+    }
   });
 
   const organizationSchema = {

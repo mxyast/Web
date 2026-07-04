@@ -10,7 +10,12 @@ interface ClientNavbarWrapperProps {
     name: string;
     role: string;
   } | null;
-  categories?: { id: string; name: string; slug: string; }[];
+  categories?: {
+    id: string;
+    name: string;
+    slug: string;
+    children?: { id: string; name: string; slug: string; }[];
+  }[];
 }
 
 export function ClientNavbarWrapper({ user, categories }: ClientNavbarWrapperProps) {
