@@ -443,7 +443,19 @@ export function ProductForm({ brands, categories, product = null }: { brands: an
                 ) : (
                   <select required name="categoryId" defaultValue={product?.categoryId || ""} className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 text-sm font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all appearance-none">
                     <option value="">Seçiniz...</option>
-                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    {categories.filter(c => !c.parentId).map(parent => {
+                      const children = categories.filter(c => c.parentId === parent.id);
+                      return (
+                        <optgroup key={parent.id} label={parent.name}>
+                          <option value={parent.id}>{parent.name} (Ana Kategori)</option>
+                          {children.map(child => (
+                            <option key={child.id} value={child.id}>
+                              ↳ {child.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      );
+                    })}
                   </select>
                 )}
               </div>

@@ -72,12 +72,12 @@ export default async function CategoriesPage() {
                       <div className="flex items-center gap-6">
                         <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500">
                           <Package className="w-3.5 h-3.5" />
-                          {cat._count.products} ürün
+                          {cat._count.products + cat.children.reduce((acc, child) => acc + child._count.products, 0)} ürün
                         </div>
                         <DeleteCategoryButton
                           categoryId={cat.id}
                           categoryName={cat.name}
-                          productCount={cat._count.products}
+                          productCount={cat._count.products + cat.children.reduce((acc, child) => acc + child._count.products, 0)}
                         />
                       </div>
                     </div>

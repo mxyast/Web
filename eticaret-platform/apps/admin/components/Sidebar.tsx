@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Users, Package, ShoppingCart, FileText, Settings, BarChart3, CreditCard, PlusCircle, Megaphone, Tag, LayoutTemplate, Shield, LogOut, ClipboardList } from "lucide-react";
+import { LayoutDashboard, Users, Package, ShoppingCart, FileText, Settings, BarChart3, CreditCard, PlusCircle, Megaphone, Tag, LayoutTemplate, Shield, LogOut, ClipboardList, Award } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -9,6 +9,7 @@ const menuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard, category: null },
   { href: "/products", label: "Ürün Yönetimi", icon: Package, category: "E-Ticaret" },
   { href: "/categories", label: "Kategoriler", icon: Tag, category: "E-Ticaret" },
+  { href: "/brands", label: "Markalar", icon: Award, category: "E-Ticaret" },
   { href: "/campaigns", label: "Kampanyalar", icon: Megaphone, category: "E-Ticaret" },
   { href: "/orders", label: "Siparişler", icon: ShoppingCart, category: "E-Ticaret" },
   { href: "/payments", label: "Ödemeler", icon: CreditCard, category: "E-Ticaret" },

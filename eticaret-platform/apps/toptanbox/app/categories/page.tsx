@@ -4,9 +4,42 @@ import Link from "next/link";
 
 export default async function CategoriesPage() {
   const categories = await prisma.category.findMany({
+    where: {
+      isActive: true,
+      OR: [
+        {
+          products: {
+            some: {
+              isActive: true,
+              isB2B: true
+            }
+          }
+        },
+        {
+          children: {
+            some: {
+              isActive: true,
+              products: {
+                some: {
+                  isActive: true,
+                  isB2B: true
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     include: {
       _count: {
-        select: { products: true }
+        select: {
+          products: {
+            where: {
+              isActive: true,
+              isB2B: true
+            }
+          }
+        }
       }
     }
   });

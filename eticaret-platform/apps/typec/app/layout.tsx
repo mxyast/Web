@@ -56,14 +56,48 @@ export default async function RootLayout({
   const session = await auth();
 
   const categories = await prisma.category.findMany({
-    where: { isActive: true, parentId: null },
+    where: {
+      isActive: true,
+      parentId: null,
+      OR: [
+        {
+          products: {
+            some: {
+              isActive: true,
+              isB2C: true
+            }
+          }
+        },
+        {
+          children: {
+            some: {
+              isActive: true,
+              products: {
+                some: {
+                  isActive: true,
+                  isB2C: true
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     orderBy: { sortOrder: 'asc' },
     select: {
       id: true,
       name: true,
       slug: true,
       children: {
-        where: { isActive: true },
+        where: {
+          isActive: true,
+          products: {
+            some: {
+              isActive: true,
+              isB2C: true
+            }
+          }
+        },
         orderBy: { sortOrder: 'asc' },
         take: 2,
         select: {

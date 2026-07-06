@@ -31,10 +31,44 @@ export default async function ProductsPage({
   }));
 
   const categories = await prisma.category.findMany({
-    where: { parentId: null, isActive: true },
+    where: {
+      parentId: null,
+      isActive: true,
+      OR: [
+        {
+          products: {
+            some: {
+              isActive: true,
+              isB2B: true
+            }
+          }
+        },
+        {
+          children: {
+            some: {
+              isActive: true,
+              products: {
+                some: {
+                  isActive: true,
+                  isB2B: true
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     include: {
       children: {
-        where: { isActive: true },
+        where: {
+          isActive: true,
+          products: {
+            some: {
+              isActive: true,
+              isB2B: true
+            }
+          }
+        },
         orderBy: { sortOrder: 'asc' }
       }
     },
